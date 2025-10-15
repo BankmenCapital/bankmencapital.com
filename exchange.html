@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exchange</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a2e;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #map-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        #map-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #back-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            font-family: 'Arial, sans-serif';
+            font-size: 16px;
+            background-color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        #sound-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            font-family: 'Arial, sans-serif';
+            font-size: 16px;
+            background-color: #fff;
+            border: none;
+            cursor: pointer;
+            display: none; /* Hidden by default */
+        }
+        .retro-textbox {
+            position: absolute;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            padding: 10px 20px;
+            border: 2px solid #fff;
+            text-align: center;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+            z-index: 1000;
+        }
+        .retro-textbox.fade-out {
+            opacity: 0;
+        }
+    </style>
+    <script>
+        // Resume audio from previous page
+        window.onload = function() {
+            let audio = document.getElementById('main-audio');
+            if (!audio) {
+                const newAudio = document.createElement('audio');
+                newAudio.id = 'main-audio';
+                newAudio.src = 'ambient-noise.mp3';
+                newAudio.loop = true;
+                document.body.appendChild(newAudio);
+                audio = newAudio;
+            }
+
+            const wasPlaying = sessionStorage.getItem('audioPlaying') === 'true';
+            const lastTime = parseFloat(sessionStorage.getItem('audioTime')) || 0;
+
+            if (wasPlaying && audio.paused) {
+                audio.currentTime = lastTime;
+                audio.play().catch(error => {
+                    console.log("Autoplay blocked:", error);
+                    const soundButton = document.getElementById('sound-button');
+                    soundButton.style.display = 'block';
+                    soundButton.onclick = () => {
+                        audio.play().then(() => soundButton.style.display = 'none');
+                    };
+                });
+            }
+        };
+        // Persist audio state
+        window.onbeforeunload = function() {
+            const audio = document.getElementById('main-audio');
+            sessionStorage.setItem('audioPlaying', audio.paused ? 'false' : 'true');
+            sessionStorage.setItem('audioTime', audio.currentTime);
+        };
+        // Handle text pop-up
+        function showTextPopup(event) {
+            if (document.querySelector('.retro-textbox')) {
+                return; // Prevent multiple textboxes
+            }
+            const textbox = document.createElement('div');
+            textbox.className = 'retro-textbox';
+            textbox.innerText = "No one works here now";
+            document.getElementById('map-container').appendChild(textbox);
+            const img = document.getElementById('map-image');
+            const rect = img.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            textbox.style.left = `${x - textbox.offsetWidth / 2}px`;
+            textbox.style.top = `${y - textbox.offsetHeight / 2}px`;
+            setTimeout(() => {
+                textbox.classList.add('fade-out');
+                setTimeout(() => textbox.remove(), 1000); // Remove after fade-out
+            }, 3000); // Display for 3 seconds
+        }
+    </script>
+</head>
+<body>
+    <div id="map-container">
+        <img src="exchange.png" id="map-image" alt="Exchange" usemap="#exchangeMap">
+        <map name="exchangeMap">
+            <!-- First button (text pop-up) -->
+            <area shape="rect" coords="259,384,995,616" href="#" onclick="showTextPopup(event); return false;" alt="Exchange Area 1">
+            <!-- Second button (link to closet.html) -->
+            <area shape="rect" coords="1414,362,1535,666" href="closet.html" alt="Closet">
+        </map>
+        <button id="back-button" onclick="window.location.href='gildedrow.html'">Go back</button>
+        <button id="sound-button">Sound on</button>
+    </div>
+</body>
+</html>

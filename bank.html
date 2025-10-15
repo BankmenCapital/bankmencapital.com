@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Bank</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a2e;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #map-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        #map-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #back-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            font-family: 'Arial, sans-serif';
+            font-size: 16px;
+            background-color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        #sound-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            font-family: 'Arial, sans-serif';
+            font-size: 16px;
+            background-color: #fff;
+            border: none;
+            cursor: pointer;
+            display: none; /* Hidden by default */
+        }
+        .retro-textbox {
+            position: absolute;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            padding: 10px 20px;
+            border: 2px solid #fff;
+            text-align: center;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+        }
+        .retro-textbox.fade-out {
+            opacity: 0;
+        }
+        .popup-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1000;
+        }
+        .popup-image {
+            max-width: 50vw;
+            max-height: 50vh;
+            object-fit: contain;
+            border: 2px solid #fff;
+            background-color: #000;
+        }
+        .popup-close {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-family: 'Arial, sans-serif';
+            font-size: 16px;
+            background-color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        /* Debugging outlines for <area> elements */
+        area[shape="circle"] {
+            outline: 2px solid red;
+            outline-offset: -2px;
+            display: block; /* For debugging visibility */
+        }
+        area[shape="rect"]:nth-child(2) {
+            outline: 2px solid blue;
+            outline-offset: -2px;
+            display: block;
+        }
+        area[shape="rect"]:nth-child(3) {
+            outline: 2px solid green;
+            outline-offset: -2px;
+            display: block;
+        }
+    </style>
+    <script>
+        // Resume audio from previous page
+        window.onload = function() {
+            let audio = document.getElementById('main-audio');
+            if (!audio) {
+                const newAudio = document.createElement('audio');
+                newAudio.id = 'main-audio';
+                newAudio.src = 'ambient-noise.mp3';
+                newAudio.loop = true;
+                document.body.appendChild(newAudio);
+                audio = newAudio;
+            }
+
+            const wasPlaying = sessionStorage.getItem('audioPlaying') === 'true';
+            const lastTime = parseFloat(sessionStorage.getItem('audioTime')) || 0;
+
+            if (wasPlaying && audio.paused) {
+                audio.currentTime = lastTime;
+                audio.play().catch(error => {
+                    console.log("Autoplay blocked:", error);
+                    const soundButton = document.getElementById('sound-button');
+                    soundButton.style.display = 'block';
+                    soundButton.onclick = () => {
+                        audio.play().then(() => soundButton.style.display = 'none');
+                    };
+                });
+            }
+
+            // Debugging: Log clicks to console
+            document.querySelectorAll('area').forEach(area => {
+                area.addEventListener('click', () => {
+                    console.log(`Clicked area: ${area.getAttribute('alt')}`);
+                });
+            });
+        };
+        // Persist audio state
+        window.onbeforeunload = function() {
+            const audio = document.getElementById('main-audio');
+            sessionStorage.setItem('audioPlaying', audio.paused ? 'false' : 'true');
+            sessionStorage.setItem('audioTime', audio.currentTime);
+        };
+        // Handle text box for circle area
+        function showTextBox(event) {
+            if (document.querySelector('.retro-textbox') || document.querySelector('.popup-container')) {
+                return;
+            }
+            const textbox = document.createElement('div');
+            textbox.className = 'retro-textbox';
+            textbox.innerText = "There's nothing here anymore...";
+            document.getElementById('map-container').appendChild(textbox);
+            const img = document.getElementById('map-image');
+            const rect = img.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            textbox.style.left = `${x - textbox.offsetWidth / 2}px`;
+            textbox.style.top = `${y - textbox.offsetHeight / 2}px`;
+            setTimeout(() => {
+                textbox.classList.add('fade-out');
+                setTimeout(() => textbox.remove(), 1000);
+            }, 3000);
+        }
+        // Handle poster pop-up
+        function showPoster(posterSrc) {
+            if (document.querySelector('.retro-textbox') || document.querySelector('.popup-container')) {
+                return;
+            }
+            const container = document.createElement('div');
+            container.className = 'popup-container';
+            const img = document.createElement('img');
+            img.className = 'popup-image';
+            img.src = posterSrc;
+            const closeButton = document.createElement('button');
+            closeButton.className = 'popup-close';
+            closeButton.innerText = 'Close';
+            closeButton.onclick = () => container.remove();
+            container.appendChild(img);
+            container.appendChild(closeButton);
+            document.getElementById('map-container').appendChild(container);
+        }
+    </script>
+</head>
+<body>
+    <div id="map-container">
+        <img src="bank.png" id="map-image" alt="The Bank" usemap="#bankMap">
+        <map name="bankMap">
+            <!-- Circle for text box, adjusted up and right -->
+            <area shape="circle" coords="900,800,200" href="#" onclick="showTextBox(event); return false;" alt="Bottom Center Trigger">
+            <!-- Rectangle for poster 1 -->
+            <area shape="rect" coords="544,110,646,244" href="#" onclick="showPoster('poster1.jpg'); return false;" alt="Poster 1">
+            <!-- Rectangle for poster 2 -->
+            <area shape="rect" coords="979,113,1072,247" href="#" onclick="showPoster('poster2.jpg'); return false;" alt="Poster 2">
+        </map>
+        <button id="back-button" onclick="window.location.href='gildedrow.html'">Go back</button>
+        <button id="sound-button">Sound on</button>
+    </div>
+</body>
+</html>

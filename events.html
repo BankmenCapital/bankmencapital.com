@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bankmen Capital - Events</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;700&family=Courier+Prime&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #0A3D2E;
+            color: #E8E1D1;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: rgba(10, 61, 46, 0.8);
+            padding: 15px 0;
+            text-align: center;
+            border-bottom: 1px solid rgba(191, 164, 111, 0.3);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(28, 42, 68, 0.5);
+        }
+
+        .logo-icon {
+            height: 40px;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 10px 0;
+        }
+
+        nav a {
+            color: #E8E1D1;
+            text-decoration: none;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: color 0.3s ease, transform 0.3s ease;
+            position: relative;
+            padding: 5px 0;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #BFA46F;
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #BFA46F;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        nav a.disabled {
+            color: #555;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        /* Events Section */
+        .events-hero {
+            text-align: center;
+            padding: 80px 20px 40px;
+            background: linear-gradient(to bottom, rgba(10, 61, 46, 0.9), rgba(15, 26, 68, 0.6)), url('bankmen-event-banner.jpg') center/cover no-repeat;
+            position: relative;
+            border-bottom: 1px solid rgba(191, 164, 111, 0.3);
+        }
+
+        .events-hero h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.8rem;
+            color: #BFA46F;
+            margin-bottom: 15px;
+        }
+
+        .events-hero p {
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.7;
+            color: #E8E1D1;
+        }
+
+        .events-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            padding: 60px 20px 100px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .event-card {
+            background: rgba(15, 26, 68, 0.6);
+            border: 1px solid rgba(191, 164, 111, 0.4);
+            border-radius: 12px;
+            width: 320px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(191, 164, 111, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(191, 164, 111, 0.4);
+        }
+
+        .event-card h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            color: #BFA46F;
+            margin-bottom: 10px;
+        }
+
+        .event-card p {
+            font-size: 1rem;
+            color: #E8E1D1;
+            line-height: 1.6;
+        }
+
+        .event-date {
+            font-family: 'Courier Prime', monospace;
+            background: rgba(10, 61, 46, 0.7);
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(191, 164, 111, 0.4);
+            color: #BFA46F;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            background: #0A3D2E;
+            border-top: 1px solid rgba(191, 164, 111, 0.3);
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        footer a {
+            color: #BFA46F;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        footer a:hover {
+            color: #E8E1D1;
+        }
+
+        @media (max-width: 768px) {
+            .events-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .event-card {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="logo-icon.png" alt="Bankmen Capital Icon" class="logo-icon">
+        <nav>
+            <ul>
+                <li><a href="mainpage.html">Home</a></li>
+                <li><a href="index.html">Lore</a></li>
+                <li><a href="shop.html" class="disabled">Shop</a></li>
+                <li><a href="events.html">Events</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="events-hero">
+        <h1>Bankmen Events</h1>
+        <p>Stay up to date with ongoing missions, live drops, and player-led operations across Bankmen City. Join the uprising as factions battle for control of the streets.</p>
+    </section>
+
+    <section class="events-container">
+        <div class="event-card">
+            <div class="event-date">OCT 17, 2025</div>
+            <h2>The Mint Goes Live</h2>
+            <p>The first wave of Bankmen Capital NFTs drop. Secure your spot in the rebuilding of Bankmen City before factions seize all control.</p>
+        </div>
+
+
+    </section>
+
+    <footer>
+        <p>Bankmen Capital 2025 | Rise from the ashes on 10/17/25</p>
+    </footer>
+</body>
+</html>
