@@ -3,330 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bankmen Capital - Home</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;700&family=Courier+Prime&display=swap" rel="stylesheet">
+    <title>Main Map</title>
     <style>
         body {
             margin: 0;
-            font-family: 'Inter', sans-serif;
-            background-color: #0A3D2E;
-            color: #E8E1D1;
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
-
-        h1, h2, h3, nav a, .countdown {
-            font-family: 'Cinzel', serif;
-        }
-
-        header {
-            background: rgba(10, 61, 46, 0.8);
-            padding: 15px 0;
-            text-align: center;
-            border-bottom: 1px solid rgba(191, 164, 111, 0.3);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            box-shadow: 0 4px 20px rgba(28, 42, 68, 0.5);
-        }
-
-        .logo-icon {
-            height: 40px;
-            vertical-align: middle;
-            margin-right: 10px;
-        }
-
-        nav ul {
-            list-style: none;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin: 10px 0;
-        }
-
-        nav a {
-            color: #E8E1D1;
-            text-decoration: none;
-            font-size: 1.1rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            transition: color 0.3s ease, transform 0.3s ease;
-            position: relative;
-            padding: 5px 0;
-        }
-
-        nav a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: #BFA46F;
-            transition: width 0.3s ease;
-        }
-
-        nav a:hover {
-            color: #BFA46F;
-        }
-
-        nav a:hover::after {
-            width: 100%;
-        }
-
-        nav a.disabled {
-            color: #666;
-            pointer-events: none;
-            opacity: 0.5;
-        }
-
-        /* Hero */
-        .hero {
-            text-align: center;
-            padding: 60px 20px 80px;
-            background: url('bank.png') no-repeat center/cover #0A3D2E;
-            min-height: 80vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-            filter: brightness(0.8) grayscale(10%);
+            background-color: #1a1a2e;
+            height: 100vh;
             overflow: hidden;
         }
-
-        .hero::before {
-            content: '';
+        #map-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        #map-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('crt-scanlines.png') repeat;
-            opacity: 0.2;
-            mix-blend-mode: overlay;
         }
-
-        .hero::after {
-            content: '';
+        #sound-button {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, rgba(10, 61, 46, 0.4), rgba(15, 26, 68, 0.7));
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            font-family: 'Arial, sans-serif';
+            font-size: 16px;
+            background-color: #fff;
+            border: none;
+            cursor: pointer;
+            display: none; /* Hidden by default */
         }
-
-        .hero .logo-full {
-            height: 200px;
-            margin: 0 auto 10px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            max-width: 700px;
-            margin: 10px auto 20px;
-            position: relative;
-            z-index: 1;
-            color: #E8E1D1;
-            font-weight: 300;
-        }
-
-        .countdown {
-            background: rgba(15, 26, 68, 0.6);
-            color: #BFA46F;
-            padding: 15px 30px;
-            font-size: 2rem;
-            border: 1px solid rgba(191, 164, 111, 0.5);
-            display: inline-block;
-            letter-spacing: 3px;
-            position: relative;
-            z-index: 1;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(191, 164, 111, 0.3);
-            backdrop-filter: blur(5px);
-            font-family: 'Courier Prime', monospace;
-        }
-
-        /* --- NEW CONTENT SECTIONS --- */
-        .content-section {
-            max-width: 1100px;
-            margin: 80px auto;
-            padding: 0 20px;
-        }
-
-        .content-section h2 {
-            color: #BFA46F;
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
-
-        .content-section p {
-            color: #E8E1D1;
-            font-size: 1.05rem;
-            margin-bottom: 20px;
-        }
-
-        .highlight-box {
-            background: rgba(15, 26, 68, 0.5);
-            border: 1px solid rgba(191, 164, 111, 0.5);
-            border-radius: 10px;
-            padding: 25px;
-            margin: 40px 0;
-            box-shadow: 0 0 20px rgba(191, 164, 111, 0.15);
-        }
-
-        .split {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 40px;
-        }
-
-        .split img {
-            flex: 1;
-            max-width: 400px;
-            border-radius: 10px;
-            opacity: 0.9;
-        }
-
-        .split div {
-            flex: 2;
-        }
-
-        .plans {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        .plan-card {
-            flex: 1;
-            min-width: 300px;
-            background: rgba(10, 61, 46, 0.6);
-            border: 1px solid rgba(191, 164, 111, 0.4);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(191, 164, 111, 0.2);
-        }
-
-        footer {
+        .retro-textbox {
+            position: absolute;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            padding: 10px 20px;
+            border: 2px solid #fff;
             text-align: center;
-            padding: 30px 20px;
-            background: #0A3D2E;
-            border-top: 1px solid rgba(191, 164, 111, 0.3);
-            font-size: 0.9rem;
-            color: #888;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 1s ease-out;
         }
-
-        footer a {
-            color: #BFA46F;
-            text-decoration: none;
+        .retro-textbox.fade-out {
+            opacity: 0;
         }
-
-        footer a:hover {
-            color: #E8E1D1;
+        .popup-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1000;
         }
-
-        @media (max-width: 768px) {
-            .split {
-                flex-direction: column;
-            }
-            .hero {
-                padding: 60px 20px;
-                min-height: 60vh;
-            }
-            .hero .logo-full {
-                height: 140px;
-            }
+        .popup-image {
+            max-width: 50vw;
+            max-height: 50vh;
+            object-fit: contain;
+            border: 2px solid #fff;
+            background-color: #000;
+        }
+        .popup-close {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-family: 'Arial, sans-serif';
+            font-size: 16px;
+            background-color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
     </style>
+    <script>
+        // Resume audio from previous page
+        window.onload = function() {
+            let audio = document.getElementById('main-audio');
+            if (!audio) {
+                const newAudio = document.createElement('audio');
+                newAudio.id = 'main-audio';
+                newAudio.src = 'ambient-noise.mp3';
+                newAudio.loop = true;
+                document.body.appendChild(newAudio);
+                audio = newAudio;
+            }
+
+            const wasPlaying = sessionStorage.getItem('audioPlaying') === 'true';
+            const lastTime = parseFloat(sessionStorage.getItem('audioTime')) || 0;
+
+            if (wasPlaying && audio.paused) {
+                audio.currentTime = lastTime;
+                audio.play().catch(error => {
+                    console.log("Autoplay blocked:", error);
+                    const soundButton = document.getElementById('sound-button');
+                    soundButton.style.display = 'block';
+                    soundButton.onclick = () => {
+                        audio.play().then(() => soundButton.style.display = 'none');
+                    };
+                });
+            }
+        };
+        // Persist audio state
+        window.onbeforeunload = function() {
+            const audio = document.getElementById('main-audio');
+            sessionStorage.setItem('audioPlaying', audio.paused ? 'false' : 'true');
+            sessionStorage.setItem('audioTime', audio.currentTime);
+        };
+        // Handle text box pop-up
+        function showTextBox(event) {
+            if (document.querySelector('.retro-textbox') || document.querySelector('.popup-container')) {
+                return; // Do nothing if a text box or popup is already present
+            }
+            const textbox = document.createElement('div');
+            textbox.className = 'retro-textbox';
+            textbox.innerText = "Bankmen Tower lies in ruin.";
+            document.getElementById('map-container').appendChild(textbox);
+            const img = document.getElementById('map-image');
+            const rect = img.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            textbox.style.left = `${x - textbox.offsetWidth / 2}px`;
+            textbox.style.top = `${y - textbox.offsetHeight / 2}px`;
+            setTimeout(() => {
+                textbox.classList.add('fade-out');
+                setTimeout(() => textbox.remove(), 1000); // Remove after fade-out (1s)
+            }, 3000); // Display for 3 seconds
+        }
+        // Handle image pop-up
+        function showPoster(posterSrc) {
+            if (document.querySelector('.retro-textbox') || document.querySelector('.popup-container')) {
+                return; // Do nothing if a text box or popup is already present
+            }
+            const container = document.createElement('div');
+            container.className = 'popup-container';
+            const img = document.createElement('img');
+            img.className = 'popup-image';
+            img.src = posterSrc;
+            const closeButton = document.createElement('button');
+            closeButton.className = 'popup-close';
+            closeButton.innerText = 'Close';
+            closeButton.onclick = () => container.remove();
+            container.appendChild(img);
+            container.appendChild(closeButton);
+            document.getElementById('map-container').appendChild(container);
+        }
+    </script>
 </head>
 <body>
-    <header>
-        <img src="logo-icon.png" alt="Bankmen Capital Icon" class="logo-icon">
-        <nav>
-            <ul>
-                <li><a href="mainpage.html">Home</a></li>
-                <li><a href="index.html">Lore</a></li>
-                <li><a href="shop.html" class="disabled">Shop</a></li>
-                <li><a href="events.html">Events</a></li>
-            </ul>
-        </nav>
-    </header>
+    <div id="map-container">
+        <img src="mainmap.png" id="map-image" alt="Main Map" usemap="#mainMap">
+        <map name="mainMap">
+            <!-- Rectangle for gildenrow.html -->
+            <area shape="rect" coords="50,100,450,500" href="gildedrow.html" alt="Gilded Row">
+            <!-- Rectangle for The Neon Verge (verge.html) -->
+            <area shape="rect" coords="930,140,1400,496" href="verge.html" alt="The Neon Verge">
+            <!-- Rectangle for text pop-up -->
+            <area shape="rect" coords="721,100,874,575" href="#" onclick="showTextBox(event); return false;" alt="Bankmen Tower">
+            <!-- Rectangle for image pop-up -->
+            <area shape="rect" coords="738,632,860,757" href="#" onclick="showPoster('popup1.png'); return false;" alt="Image Popup">
+            <!-- Rectangle for rupture.html (bottom-left corner) -->
+            <area shape="rect" coords="50,700,500,1000" href="rupture.html" alt="Rupture">
+            <!-- Rectangle for monolith.html (bottom-right corner) -->
+            <area shape="rect" coords="1100,700,1550,1000" href="monolith.html" alt="Monolith">
 
-    <section class="hero">
-        <img src="logo-full.png" alt="Bankmen Capital Logo" class="logo-full">
-        <p>The Bankmen Rug pull hit us all hard. The ruggers bled Bankmen City dry, and now the streets are a warzone of greed. Mint your Bankmen Capital NFT and fight for control in the wreckage.</p>
-        <div class="countdown" id="countdown">
-            <span id="days">00</span>:<span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
-        </div>
-    </section>
-
-    <!-- NEW SECTIONS BELOW -->
-    <section class="content-section">
-        <div class="split">
-            <div>
-                <h2>The Rug and Compromise: What Happened</h2>
-                <p>Bankmen Finance was a bold Solana NFT-DeFi project—lending, $CASH rewards, raffles, and community tools that promised big. But it rugged everyone: Values crashed, liquidity gone. The nail in the coffin? Update authority compromised and unchangeable, killing any fixes or trust. Holders were left in chaos, but we banded together for a takeover. No saviors—just us rebuilding smarter.</p>
-            </div>
-            <img src="newspaper.png" alt="Rugged Vault Image">
-        </div>
-
-        <div class="highlight-box">
-            <h2>Free NFT for Bankmen Finance Holders</h2>
-            <p>A smaller, focused 2000-supply mint gives the community real authority: On-chain governance, voting on updates, and treasury control. Every original holder gets 1 free mint per verified wallet—48-hour priority window starting Friday. Public grabs remainders Sunday.</p>
-        </div>
-
-        <div>
-            <h2>Interactive Lore World: Explore on the Lore Tab</h2>
-            <p>Click through our site’s Lore tab for a secret-filled journey. Uncover our past, present, and future. Vote to expand chapters and add twists. Dive in to discover our story's depths.</p>
-        </div>
-
-        <div>
-            <h2>Plans Forward: Events and Merch Done Right</h2>
-            <p>Delivering real value post-mint, community-voted and transparent.</p>
-            <div class="plans">
-                <div class="plan-card">
-                    <h3>Community Events</h3>
-                    <p>Solana meetups, parties in hubs like Miami, hackathons, and pubs. Treasury and revenue funds it all. Vote on themes in Discord.</p>
-                </div>
-                <div class="plan-card">
-                    <h3>Merch Store & Branding</h3>
-                    <p>Launching soon with rugged swag: Hoodies, tees, caps and Golf apparel. Holder exclusives drops with discounts.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <footer>
-        <p>Bankmen Capital 2025 | 2,000 NFTs | Rise from the ashes on 10/17/25</p>
-    </footer>
-
-    <script>
-        const mintDate = new Date('October 17, 2025 15:00:00 EST');
-        function updateCountdown() {
-            const now = new Date();
-            const timeLeft = mintDate - now;
-            if (timeLeft <= 0) {
-                document.getElementById('countdown').innerText = 'Minting Live!';
-                return;
-            }
-            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-            document.getElementById('days').innerText = String(days).padStart(2, '0');
-            document.getElementById('hours').innerText = String(hours).padStart(2, '0');
-            document.getElementById('minutes').innerText = String(minutes).padStart(2, '0');
-            document.getElementById('seconds').innerText = String(seconds).padStart(2, '0');
-        }
-        setInterval(updateCountdown, 1000);
-        updateCountdown();
-    </script>
+        </map>
+        <button id="sound-button">Sound on</button>
+    </div>
 </body>
 </html>
