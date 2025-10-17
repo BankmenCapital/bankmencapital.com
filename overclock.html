@@ -1,214 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Club Overclock</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #1a1a2e;
-            height: 100vh;
-            overflow: hidden;
-        }
-        #map-container {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-        }
-        #map-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-        #back-button {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            padding: 10px 20px;
-            font-family: 'Arial, sans-serif';
-            font-size: 16px;
-            background-color: #fff;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        #sound-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 10px 20px;
-            font-family: 'Arial, sans-serif';
-            font-size: 16px;
-            background-color: #fff;
-            border: none;
-            cursor: pointer;
-            display: none; /* Hidden by default */
-        }
-        .dialog-box {
-            position: absolute;
-            background-color: #000;
-            color: #fff;
-            font-family: 'Courier New', monospace;
-            font-size: 18px;
-            padding: 10px 20px;
-            border: 2px solid #fff;
-            text-align: center;
-            pointer-events: none;
-            opacity: 1;
-            transition: opacity 1s ease-out;
-            z-index: 1000;
-        }
-        .dialog-box.fade-out {
-            opacity: 0;
-        }
-        .dialog-option {
-            display: inline-block;
-            margin: 5px;
-            padding: 5px 10px;
-            background-color: #fff;
-            color: #000;
-            font-family: 'Arial, sans-serif';
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            pointer-events: auto;
-        }
-        .retro-textbox {
-            position: absolute;
-            background-color: #000;
-            color: #fff;
-            font-family: 'Courier New', monospace;
-            font-size: 18px;
-            padding: 10px 20px;
-            border: 2px solid #fff;
-            text-align: center;
-            pointer-events: none;
-            opacity: 1;
-            transition: opacity 1s ease-out;
-            z-index: 1000;
-        }
-        .retro-textbox.fade-out {
-            opacity: 0;
-        }
-    </style>
-    <script>
-        // Resume audio from previous page
-        window.onload = function() {
-            let audio = document.getElementById('main-audio');
-            if (!audio) {
-                const newAudio = document.createElement('audio');
-                newAudio.id = 'main-audio';
-                newAudio.src = 'ambient-noise.mp3';
-                newAudio.loop = true;
-                document.body.appendChild(newAudio);
-                audio = newAudio;
-            }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Club Overclock</title>
 
-            const wasPlaying = sessionStorage.getItem('audioPlaying') === 'true';
-            const lastTime = parseFloat(sessionStorage.getItem('audioTime')) || 0;
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0d0d17;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    font-family: "Courier New", monospace;
+  }
 
-            if (wasPlaying && audio.paused) {
-                audio.currentTime = lastTime;
-                audio.play().catch(error => {
-                    console.log("Autoplay blocked:", error);
-                    const soundButton = document.getElementById('sound-button');
-                    soundButton.style.display = 'block';
-                    soundButton.onclick = () => {
-                        audio.play().then(() => soundButton.style.display = 'none');
-                    };
-                });
-            }
-        };
-        // Persist audio state
-        window.onbeforeunload = function() {
-            const audio = document.getElementById('main-audio');
-            sessionStorage.setItem('audioPlaying', audio.paused ? 'false' : 'true');
-            sessionStorage.setItem('audioTime', audio.currentTime);
-        };
-        // Handle dialog box
-        function showDialog(event, id) {
-            if (document.querySelector(`.dialog-box[data-id="${id}"]`) || document.querySelector('.retro-textbox')) {
-                return; // Prevent multiple dialogs or textboxes
-            }
-            const dialog = document.createElement('div');
-            dialog.className = 'dialog-box';
-            dialog.setAttribute('data-id', id);
-            dialog.innerHTML = `
-                <p>test message</p>
-                <button class="dialog-option" onclick="updateDialog('${id}', 'one')">one</button>
-                <button class="dialog-option" onclick="updateDialog('${id}', 'two')">two</button>
-                <button class="dialog-option" onclick="updateDialog('${id}', 'three')">three</button>
-            `;
-            document.getElementById('map-container').appendChild(dialog);
-            const img = document.getElementById('map-image');
-            const rect = img.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            dialog.style.left = `${x - dialog.offsetWidth / 2}px`;
-            dialog.style.top = `${y - dialog.offsetHeight / 2}px`;
-            setTimeout(() => {
-                dialog.classList.add('fade-out');
-                setTimeout(() => dialog.remove(), 1000); // Remove after fade-out
-            }, 10000); // Display for 10 seconds
-        }
-        // Update dialog based on option selected
-        function updateDialog(id, choice) {
-            const dialog = document.querySelector(`.dialog-box[data-id="${id}"]`);
-            if (dialog) {
-                dialog.innerHTML = `<p>${choice}</p>`;
-                setTimeout(() => {
-                    dialog.classList.add('fade-out');
-                    setTimeout(() => dialog.remove(), 1000); // Remove after fade-out
-                }, 6000); // Display for 6 seconds
-            }
-        }
-        // Handle text pop-up
-        function showTextPopup(event) {
-            if (document.querySelector('.dialog-box') || document.querySelector('.retro-textbox')) {
-                return; // Prevent multiple dialogs or textboxes
-            }
-            const textbox = document.createElement('div');
-            textbox.className = 'retro-textbox';
-            textbox.innerText = "Not interested...";
-            document.getElementById('map-container').appendChild(textbox);
-            const img = document.getElementById('map-image');
-            const rect = img.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            textbox.style.left = `${x - textbox.offsetWidth / 2}px`;
-            textbox.style.top = `${y - textbox.offsetHeight / 2}px`;
-            setTimeout(() => {
-                textbox.classList.add('fade-out');
-                setTimeout(() => textbox.remove(), 1000); // Remove after fade-out
-            }, 3000); // Display for 3 seconds
-        }
-    </script>
+  .game-window {
+    position: relative;
+    width: 1200px;
+    height: 800px;
+    border: 3px solid #444;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #000;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  }
+
+  #map-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  #map-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ui-button {
+    position: absolute;
+    padding: 8px 16px;
+    background-color: rgba(255,255,255,0.9);
+    color: #000;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 14px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
+
+  .ui-button:hover {
+    background-color: #00ff88;
+    transform: scale(1.05);
+  }
+
+  #back-button { top: 12px; left: 12px; }
+  #sound-button { top: 12px; right: 12px; display: none; }
+
+  .dialog-box, .retro-textbox {
+    position: absolute;
+    background-color: #000;
+    color: #fff;
+    font-size: 16px;
+    padding: 10px 20px;
+    border: 2px solid #fff;
+    text-align: center;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 1s ease-out;
+    z-index: 1000;
+  }
+
+  .dialog-box.fade-out, .retro-textbox.fade-out { opacity: 0; }
+
+  .dialog-option {
+    display: inline-block;
+    margin: 5px;
+    padding: 5px 10px;
+    background-color: #fff;
+    color: #000;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    pointer-events: auto;
+  }
+</style>
 </head>
 <body>
-    <div id="map-container">
-        <img src="overclock.png" id="map-image" alt="Club Overclock" usemap="#overclockMap">
-        <map name="overclockMap">
-            <!-- Rectangle for person 1 dialog -->
-            <area shape="rect" coords="55,461,356,945" href="#" onclick="showDialog(event, 'person1')" alt="Person 1">
-            <!-- Rectangle for person 2 dialog -->
-            <area shape="rect" coords="435,517,622,932" href="#" onclick="showDialog(event, 'person2')" alt="Person 2">
-            <!-- Rectangle for person 3 text pop-up -->
-            <area shape="rect" coords="783,613,900,908" href="#" onclick="showTextPopup(event); return false;" alt="Person 3">
-            <!-- Rectangle for person 4 dialog -->
-            <area shape="rect" coords="1274,465,1535,945" href="#" onclick="showDialog(event, 'person4')" alt="Person 4">
-        </map>
-        <button id="back-button" onclick="window.location.href='verge.html'">Go back</button>
-        <button id="sound-button">Sound on</button>
-    </div>
+<div class="game-window">
+  <div id="map-container">
+    <img src="overclock.png" id="map-image" alt="Club Overclock" usemap="#overclockMap">
+    <map name="overclockMap">
+      <area shape="rect" coords="55,461,356,945" href="#" onclick="showDialog(event, 'person1')" alt="Person 1">
+      <area shape="rect" coords="435,517,622,932" href="#" onclick="showDialog(event, 'person2')" alt="Person 2">
+      <area shape="rect" coords="783,613,900,908" href="#" onclick="showTextPopup(event); return false;" alt="Person 3">
+      <area shape="rect" coords="1274,465,1535,945" href="#" onclick="showDialog(event, 'person4')" alt="Person 4">
+    </map>
+    <button id="back-button" class="ui-button" onclick="window.location.href='verge.html'">Back</button>
+    <button id="sound-button" class="ui-button">Sound On</button>
+  </div>
+</div>
+
+<script>
+  // --- AUDIO ---
+  window.onload = function () {
+    let audio = document.getElementById('main-audio');
+    if (!audio) {
+      const newAudio = document.createElement('audio');
+      newAudio.id = 'main-audio';
+      newAudio.src = 'ambient-noise.mp3';
+      newAudio.loop = true;
+      document.body.appendChild(newAudio);
+      audio = newAudio;
+    }
+
+    const wasPlaying = sessionStorage.getItem('audioPlaying') === 'true';
+    const lastTime = parseFloat(sessionStorage.getItem('audioTime')) || 0;
+
+    if (wasPlaying && audio.paused) {
+      audio.currentTime = lastTime;
+      audio.play().catch(err => {
+        const btn = document.getElementById('sound-button');
+        btn.style.display = 'block';
+        btn.onclick = () => { audio.play(); btn.style.display = 'none'; };
+      });
+    }
+  };
+
+  window.onbeforeunload = function () {
+    const audio = document.getElementById('main-audio');
+    sessionStorage.setItem('audioPlaying', audio.paused ? 'false' : 'true');
+    sessionStorage.setItem('audioTime', audio.currentTime);
+  };
+
+  // --- DIALOG & TEXT ---
+  function showDialog(event, id) {
+    if (document.querySelector(`.dialog-box[data-id="${id}"]`) || document.querySelector('.retro-textbox')) return;
+    const dialog = document.createElement('div');
+    dialog.className = 'dialog-box';
+    dialog.setAttribute('data-id', id);
+    dialog.innerHTML = `
+      <p>test message</p>
+      <button class="dialog-option" onclick="updateDialog('${id}','one')">one</button>
+      <button class="dialog-option" onclick="updateDialog('${id}','two')">two</button>
+      <button class="dialog-option" onclick="updateDialog('${id}','three')">three</button>
+    `;
+    document.getElementById('map-container').appendChild(dialog);
+    const img = document.getElementById('map-image').getBoundingClientRect();
+    dialog.style.left = `${event.clientX - img.left - dialog.offsetWidth/2}px`;
+    dialog.style.top = `${event.clientY - img.top - dialog.offsetHeight/2}px`;
+    setTimeout(() => { dialog.classList.add('fade-out'); setTimeout(() => dialog.remove(),1000); }, 10000);
+  }
+
+  function updateDialog(id, choice) {
+    const dialog = document.querySelector(`.dialog-box[data-id="${id}"]`);
+    if (dialog) {
+      dialog.innerHTML = `<p>${choice}</p>`;
+      setTimeout(() => { dialog.classList.add('fade-out'); setTimeout(() => dialog.remove(),1000); }, 6000);
+    }
+  }
+
+  function showTextPopup(event) {
+    if (document.querySelector('.dialog-box') || document.querySelector('.retro-textbox')) return;
+    const textbox = document.createElement('div');
+    textbox.className = 'retro-textbox';
+    textbox.innerText = "Not interested...";
+    document.getElementById('map-container').appendChild(textbox);
+    const img = document.getElementById('map-image').getBoundingClientRect();
+    textbox.style.left = `${event.clientX - img.left - textbox.offsetWidth/2}px`;
+    textbox.style.top = `${event.clientY - img.top - textbox.offsetHeight/2}px`;
+    setTimeout(() => { textbox.classList.add('fade-out'); setTimeout(() => textbox.remove(),1000); }, 3000);
+  }
+</script>
 </body>
 </html>
