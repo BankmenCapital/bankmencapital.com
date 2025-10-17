@@ -46,10 +46,10 @@
       display: block;
     }
 
-    /* --- BUTTONS --- */
+    /* --- BUTTON STYLES --- */
     .ui-button {
       position: absolute;
-      top: 12px;
+      left: 12px;
       padding: 8px 16px;
       background-color: rgba(255, 255, 255, 0.9);
       color: #000;
@@ -60,20 +60,26 @@
       text-transform: uppercase;
       letter-spacing: 1px;
       font-size: 14px;
-      transition: background-color 0.2s ease;
+      transition: background-color 0.2s ease, transform 0.1s ease;
     }
 
     .ui-button:hover {
       background-color: #00ff88;
+      transform: scale(1.05);
+    }
+
+    #fullscreen-button {
+      top: 12px;
+    }
+
+    #back-button {
+      top: 56px; /* Positioned right below fullscreen button */
     }
 
     #sound-button {
       right: 12px;
+      top: 12px;
       display: none;
-    }
-
-    #fullscreen-button {
-      left: 12px;
     }
 
     /* --- TEXT BOX --- */
@@ -126,7 +132,6 @@
       text-transform: uppercase;
       letter-spacing: 1px;
     }
-
   </style>
 </head>
 <body>
@@ -143,7 +148,9 @@
         <area shape="rect" coords="1100,700,1550,1000" href="monolith.html" alt="Monolith">
       </map>
 
+      <!-- UI Buttons -->
       <button id="fullscreen-button" class="ui-button">Fullscreen</button>
+      <button id="back-button" class="ui-button" onclick="window.location.href='index.html'">Back to Site</button>
       <button id="sound-button" class="ui-button">Sound On</button>
     </div>
   </div>
