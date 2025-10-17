@@ -20,38 +20,53 @@
         #map-image {
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
+            object-fit: contain;
+            background-color: #000;
+            display: block;
         }
-        #back-button {
+
+        /* Button styling */
+        .control-button {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            right: 10px;
             padding: 10px 20px;
-            font-family: 'Arial, sans-serif';
+            font-family: 'Arial', sans-serif;
             font-size: 16px;
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.9);
             border: none;
             cursor: pointer;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
+            transition: background 0.3s;
         }
-        #sound-button {
-            position: absolute;
+
+        .control-button:hover {
+            background-color: #e0e0e0;
+        }
+
+        #fullscreen-button {
             top: 10px;
-            right: 10px;
-            padding: 10px 20px;
-            font-family: 'Arial, sans-serif';
-            font-size: 16px;
-            background-color: #fff;
-            border: none;
-            cursor: pointer;
+        }
+
+        #back-button {
+            top: 60px;
+        }
+
+        #sound-button {
+            top: 10px;
+            left: 10px;
             display: none; /* Hidden by default */
         }
+
+        @media (max-width: 768px) {
+            .control-button {
+                font-size: 14px;
+                padding: 8px 14px;
+            }
+        }
     </style>
+
     <script>
         // Resume audio from previous page
         window.onload = function() {
@@ -80,17 +95,31 @@
                 });
             }
         };
+
         // Persist audio state
         window.onbeforeunload = function() {
             const audio = document.getElementById('main-audio');
             sessionStorage.setItem('audioPlaying', audio.paused ? 'false' : 'true');
             sessionStorage.setItem('audioTime', audio.currentTime);
         };
+
+        // Fullscreen toggle
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
     </script>
 </head>
+
 <body>
     <div id="map-container">
         <img src="gildedrow.png" id="map-image" alt="Gilden Row" usemap="#gildenMap">
+
         <map name="gildenMap">
             <!-- Rectangle for bank.html -->
             <area shape="rect" coords="106,107,444,566" href="bank.html" alt="Bank">
@@ -98,11 +127,14 @@
             <area shape="rect" coords="459,159,806,473" href="exchange.html" alt="Exchange">
             <!-- Rectangle for well.html -->
             <area shape="rect" coords="617,591,674,689" href="well.html" alt="Well">
-            <!-- Rectangle for pub.html (swapped coordinates) -->
+            <!-- Rectangle for pub.html -->
             <area shape="rect" coords="1068,429,1242,631" href="pub.html" alt="Pub">
         </map>
-        <button id="back-button" onclick="window.location.href='mainpage.html'">Go back</button>
-        <button id="sound-button">Sound on</button>
+
+        <!-- Buttons -->
+        <button id="fullscreen-button" class="control-button" onclick="toggleFullscreen()">Fullscreen</button>
+        <button id="back-button" class="control-button" onclick="window.location.href='mainpage.html'">Back</button>
+        <button id="sound-button" class="control-button">Sound on</button>
     </div>
 </body>
 </html>
