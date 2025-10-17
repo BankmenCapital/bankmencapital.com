@@ -68,12 +68,8 @@
       transform: scale(1.05);
     }
 
-    #fullscreen-button {
-      top: 12px;
-    }
-
     #back-button {
-      top: 56px; /* Positioned right below fullscreen button */
+      top: 12px;
     }
 
     #sound-button {
@@ -149,7 +145,6 @@
       </map>
 
       <!-- UI Buttons -->
-      <button id="fullscreen-button" class="ui-button">Fullscreen</button>
       <button id="back-button" class="ui-button" onclick="window.location.href='index.html'">Back to Site</button>
       <button id="sound-button" class="ui-button">Sound On</button>
     </div>
@@ -235,28 +230,6 @@
       container.appendChild(closeButton);
       document.getElementById('map-container').appendChild(container);
     }
-
-    // --- FULLSCREEN TOGGLE ---
-    const fullscreenButton = document.getElementById('fullscreen-button');
-    const gameWindow = document.getElementById('game-window');
-
-    fullscreenButton.addEventListener('click', () => {
-      if (!document.fullscreenElement) {
-        gameWindow.requestFullscreen().then(() => {
-          fullscreenButton.innerText = "Exit Fullscreen";
-          setTimeout(resizeMap, 300);
-        });
-      } else {
-        document.exitFullscreen().then(() => {
-          fullscreenButton.innerText = "Fullscreen";
-          setTimeout(resizeMap, 300);
-        });
-      }
-    });
-
-    document.addEventListener('fullscreenchange', () => {
-      resizeMap();
-    });
   </script>
 </body>
 </html>
