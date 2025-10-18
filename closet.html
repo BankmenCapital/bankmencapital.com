@@ -6,7 +6,6 @@
   <title>Closet</title>
 
   <style>
-    /* --- GLOBAL LAYOUT --- */
     body {
       margin: 0;
       padding: 0;
@@ -19,7 +18,6 @@
       font-family: "Courier New", monospace;
     }
 
-    /* --- FIXED GAME WINDOW --- */
     .game-window {
       position: relative;
       width: 1200px;
@@ -32,7 +30,6 @@
       transition: all 0.3s ease;
     }
 
-    /* --- MAP --- */
     #map-container {
       position: relative;
       width: 100%;
@@ -46,7 +43,6 @@
       display: block;
     }
 
-    /* --- BUTTON STYLES --- */
     .ui-button {
       position: absolute;
       padding: 8px 16px;
@@ -67,18 +63,9 @@
       transform: scale(1.05);
     }
 
-    #back-button {
-      top: 12px;
-      left: 12px;
-    }
+    #back-button { top: 12px; left: 12px; }
+    #sound-button { top: 12px; right: 12px; display: none; }
 
-    #sound-button {
-      top: 12px;
-      right: 12px;
-      display: none;
-    }
-
-    /* --- RETRO TEXTBOX --- */
     .retro-textbox {
       position: absolute;
       background-color: #000;
@@ -94,11 +81,8 @@
       z-index: 1000;
     }
 
-    .retro-textbox.fade-out {
-      opacity: 0;
-    }
+    .retro-textbox.fade-out { opacity: 0; }
 
-    /* --- VIDEO POPUP --- */
     .popup-container {
       position: absolute;
       top: 50%;
@@ -138,21 +122,18 @@
       <img src="closet.png" id="map-image" alt="Closet" usemap="#closetMap">
 
       <map name="closetMap">
-        <!-- Video pop-up -->
-        <area shape="rect" coords="470,722,561,794" href="#" onclick="showVideoPopup(event); return false;" alt="Video Trigger">
-        <!-- Text pop-ups -->
-        <area shape="rect" coords="381,131,626,316" href="#" onclick="showTextPopup(event,'It\'s been so long since the rug.'); return false;" alt="Text Popup 1">
-        <area shape="rect" coords="983,540,1083,625" href="#" onclick="showTextPopup(event,'Good Morning'); return false;" alt="Text Popup 2">
+        <area shape="rect" coords="385,679,539,734" href="#" onclick="showVideoPopup(event); return false;" alt="Video Trigger">
+        <area shape="rect" coords="247,119,524,344" href="#" onclick="showTextPopup(event,'It\'s been so long since the rug.'); return false;" alt="Text Popup 1">
+        <area shape="rect" coords="942,540,1060,625" href="#" onclick="showTextPopup(event,'Good Morning'); return false;" alt="Text Popup 2">
       </map>
 
-      <!-- UI Buttons -->
       <button id="back-button" class="ui-button" onclick="window.location.href='exchange.html'">Back</button>
       <button id="sound-button" class="ui-button">Sound On</button>
     </div>
   </div>
 
   <script>
-    // --- AUDIO HANDLING ---
+    // --- AUDIO ---
     window.onload = function () {
       let audio = document.getElementById('main-audio');
       if (!audio) {
@@ -170,14 +151,14 @@
       if (wasPlaying && audio.paused) {
         audio.currentTime = lastTime;
         audio.play().catch(error => {
-          console.log("Autoplay blocked:", error);
           const soundButton = document.getElementById('sound-button');
           soundButton.style.display = 'block';
-          soundButton.onclick = () => {
-            audio.play().then(() => (soundButton.style.display = 'none'));
-          };
+          soundButton.onclick = () => { audio.play(); soundButton.style.display = 'none'; };
         });
       }
+
+      // --- IMAGE MAP RESIZER ---
+      if (window.imageMapResize) imageMapResize();
     };
 
     window.onbeforeunload = function () {
@@ -202,10 +183,7 @@
       const closeButton = document.createElement('button');
       closeButton.className = 'popup-close';
       closeButton.innerText = 'Close';
-      closeButton.onclick = () => {
-        video.pause();
-        container.remove();
-      };
+      closeButton.onclick = () => { video.pause(); container.remove(); };
 
       container.appendChild(video);
       container.appendChild(closeButton);
@@ -234,5 +212,7 @@
       }, 3000);
     }
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/image-map-resizer@1.0.10/js/imageMapResizer.min.js"></script>
 </body>
 </html>
