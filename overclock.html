@@ -99,12 +99,14 @@
 <div class="game-window">
   <div id="map-container">
     <img src="overclock.png" id="map-image" alt="Club Overclock" usemap="#overclockMap">
+
     <map name="overclockMap">
-      <area shape="rect" coords="55,461,356,945" href="#" onclick="showDialog(event, 'person1')" alt="Person 1">
+      <area shape="rect" coords="16,474,319,956" href="#" onclick="showDialog(event, 'person1')" alt="Person 1">
       <area shape="rect" coords="435,517,622,932" href="#" onclick="showDialog(event, 'person2')" alt="Person 2">
       <area shape="rect" coords="783,613,900,908" href="#" onclick="showTextPopup(event); return false;" alt="Person 3">
-      <area shape="rect" coords="1274,465,1535,945" href="#" onclick="showDialog(event, 'person4')" alt="Person 4">
+      <area shape="rect" coords="1201,454,1506,918" href="#" onclick="showDialog(event, 'person4')" alt="Person 4">
     </map>
+
     <button id="back-button" class="ui-button" onclick="window.location.href='verge.html'">Back</button>
     <button id="sound-button" class="ui-button">Sound On</button>
   </div>
@@ -134,6 +136,9 @@
         btn.onclick = () => { audio.play(); btn.style.display = 'none'; };
       });
     }
+
+    // --- IMAGE MAP RESIZER ---
+    if (window.imageMapResize) imageMapResize();
   };
 
   window.onbeforeunload = function () {
@@ -181,5 +186,7 @@
     setTimeout(() => { textbox.classList.add('fade-out'); setTimeout(() => textbox.remove(),1000); }, 3000);
   }
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/image-map-resizer@1.0.10/js/imageMapResizer.min.js"></script>
 </body>
 </html>
