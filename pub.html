@@ -6,7 +6,6 @@
   <title>Pub</title>
 
   <style>
-    /* --- GLOBAL LAYOUT --- */
     body {
       margin: 0;
       padding: 0;
@@ -19,7 +18,6 @@
       font-family: "Courier New", monospace;
     }
 
-    /* --- FIXED GAME WINDOW --- */
     .game-window {
       position: relative;
       width: 1200px;
@@ -32,7 +30,6 @@
       transition: all 0.3s ease;
     }
 
-    /* --- MAP --- */
     #map-container {
       position: relative;
       width: 100%;
@@ -46,7 +43,6 @@
       display: block;
     }
 
-    /* --- BUTTON STYLES --- */
     .ui-button {
       position: absolute;
       left: 12px;
@@ -68,24 +64,18 @@
       transform: scale(1.05);
     }
 
-    #back-button {
-      top: 12px;
-    }
-
-    #sound-button {
-      right: 12px;
-      top: 12px;
-      display: none;
-    }
+    #back-button { top: 12px; }
+    #sound-button { top: 12px; right: 12px; display: none; }
   </style>
 </head>
 <body>
-
   <div class="game-window">
     <div id="map-container">
-      <img src="pub.png" id="map-image" alt="Pub">
+      <img src="pub.png" id="map-image" alt="Pub" usemap="#pubMap">
 
-      <!-- UI Buttons -->
+      <!-- Optional map for future interactive areas -->
+      <map name="pubMap"></map>
+
       <button id="back-button" class="ui-button" onclick="window.location.href='gildedrow.html'">Back</button>
       <button id="sound-button" class="ui-button">Sound On</button>
     </div>
@@ -118,6 +108,9 @@
           };
         });
       }
+
+      // --- IMAGE MAP RESIZER ---
+      if (window.imageMapResize) imageMapResize();
     };
 
     window.onbeforeunload = function () {
@@ -126,5 +119,7 @@
       sessionStorage.setItem('audioTime', audio.currentTime);
     };
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/image-map-resizer@1.0.10/js/imageMapResizer.min.js"></script>
 </body>
 </html>
