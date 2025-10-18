@@ -6,7 +6,6 @@
   <title>Gilded Row</title>
 
   <style>
-    /* --- GLOBAL LAYOUT --- */
     body {
       margin: 0;
       padding: 0;
@@ -19,7 +18,6 @@
       font-family: "Courier New", monospace;
     }
 
-    /* --- FIXED GAME WINDOW --- */
     .game-window {
       position: relative;
       width: 1200px;
@@ -32,7 +30,6 @@
       transition: all 0.3s ease;
     }
 
-    /* --- MAP --- */
     #map-container {
       position: relative;
       width: 100%;
@@ -46,7 +43,6 @@
       display: block;
     }
 
-    /* --- BUTTON STYLES --- */
     .ui-button {
       position: absolute;
       left: 12px;
@@ -68,15 +64,8 @@
       transform: scale(1.05);
     }
 
-    #back-button {
-      top: 12px;
-    }
-
-    #sound-button {
-      right: 12px;
-      top: 12px;
-      display: none;
-    }
+    #back-button { top: 12px; }
+    #sound-button { right: 12px; top: 12px; display: none; }
   </style>
 </head>
 <body>
@@ -85,21 +74,18 @@
     <div id="map-container">
       <img src="gildedrow.png" id="map-image" alt="Gilded Row" usemap="#gildenMap">
       <map name="gildenMap">
-        <!-- Updated coordinates only -->
-        <area shape="rect" coords="115,183,457,562" href="bank.html" alt="Bank">
-        <area shape="rect" coords="562,186,822,496" href="exchange.html" alt="Exchange">
-        <area shape="rect" coords="507,585,688,688" href="well.html" alt="Well">
-        <area shape="rect" coords="961,395,1199,654" href="pub.html" alt="Pub">
+        <area shape="rect" coords="106,107,444,566" href="bank.html" alt="Bank">
+        <area shape="rect" coords="459,159,806,473" href="exchange.html" alt="Exchange">
+        <area shape="rect" coords="617,591,674,689" href="well.html" alt="Well">
+        <area shape="rect" coords="1068,429,1242,631" href="pub.html" alt="Pub">
       </map>
 
-      <!-- UI Buttons -->
       <button id="back-button" class="ui-button" onclick="window.location.href='mainpage.html'">Back</button>
       <button id="sound-button" class="ui-button">Sound On</button>
     </div>
   </div>
 
   <script>
-    // --- AUDIO HANDLING ---
     window.onload = function () {
       let audio = document.getElementById('main-audio');
       if (!audio) {
@@ -125,6 +111,9 @@
           };
         });
       }
+
+      // --- IMAGE MAP RESIZER ---
+      if (window.imageMapResize) imageMapResize();
     };
 
     window.onbeforeunload = function () {
@@ -133,5 +122,7 @@
       sessionStorage.setItem('audioTime', audio.currentTime);
     };
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/image-map-resizer@1.0.10/js/imageMapResizer.min.js"></script>
 </body>
 </html>
