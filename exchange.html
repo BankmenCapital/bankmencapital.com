@@ -6,7 +6,6 @@
   <title>Exchange</title>
 
   <style>
-    /* --- GLOBAL LAYOUT --- */
     body {
       margin: 0;
       padding: 0;
@@ -19,7 +18,6 @@
       font-family: "Courier New", monospace;
     }
 
-    /* --- FIXED GAME WINDOW --- */
     .game-window {
       position: relative;
       width: 1200px;
@@ -32,7 +30,6 @@
       transition: all 0.3s ease;
     }
 
-    /* --- MAP --- */
     #map-container {
       position: relative;
       width: 100%;
@@ -46,7 +43,6 @@
       display: block;
     }
 
-    /* --- BUTTON STYLES --- */
     .ui-button {
       position: absolute;
       left: 12px;
@@ -68,17 +64,9 @@
       transform: scale(1.05);
     }
 
-    #back-button {
-      top: 12px;
-    }
+    #back-button { top: 12px; }
+    #sound-button { right: 12px; top: 12px; display: none; }
 
-    #sound-button {
-      right: 12px;
-      top: 12px;
-      display: none;
-    }
-
-    /* --- RETRO TEXTBOX --- */
     .retro-textbox {
       position: absolute;
       background-color: #000;
@@ -107,12 +95,11 @@
 
       <map name="exchangeMap">
         <!-- First area (text pop-up) -->
-        <area shape="rect" coords="259,384,995,616" href="#" onclick="showTextPopup(event); return false;" alt="Exchange Area 1">
+        <area shape="rect" coords="16,273,974,620" href="#" onclick="showTextPopup(event); return false;" alt="Exchange Area 1">
         <!-- Second area (link to closet.html) -->
-        <area shape="rect" coords="1414,362,1535,666" href="closet.html" alt="Closet">
+        <area shape="rect" coords="1307,331,1505,758" href="closet.html" alt="Closet">
       </map>
 
-      <!-- UI Buttons -->
       <button id="back-button" class="ui-button" onclick="window.location.href='gildedrow.html'">Back</button>
       <button id="sound-button" class="ui-button">Sound On</button>
     </div>
@@ -137,7 +124,6 @@
       if (wasPlaying && audio.paused) {
         audio.currentTime = lastTime;
         audio.play().catch(error => {
-          console.log("Autoplay blocked:", error);
           const soundButton = document.getElementById('sound-button');
           soundButton.style.display = 'block';
           soundButton.onclick = () => {
@@ -145,6 +131,9 @@
           };
         });
       }
+
+      // --- IMAGE MAP RESIZER ---
+      if (window.imageMapResize) imageMapResize();
     };
 
     window.onbeforeunload = function () {
@@ -153,7 +142,6 @@
       sessionStorage.setItem('audioTime', audio.currentTime);
     };
 
-    // --- TEXT BOX POP-UP ---
     function showTextPopup(event) {
       if (document.querySelector('.retro-textbox')) return;
 
@@ -175,5 +163,7 @@
       }, 3000);
     }
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/image-map-resizer@1.0.10/js/imageMapResizer.min.js"></script>
 </body>
 </html>
