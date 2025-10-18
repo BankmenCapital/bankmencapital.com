@@ -84,11 +84,12 @@
   <div class="game-window">
     <div id="map-container">
       <img src="verge.png" id="map-image" alt="The Neon Verge" usemap="#vergeMap">
+      
       <map name="vergeMap">
-        <area shape="rect" coords="347,238,693,465" href="overclock.html" alt="Club Overclock">
-        <area shape="rect" coords="861,106,1130,351" href="memory.html" alt="Memory">
-        <area shape="rect" coords="215,603,507,835" href="raffle.html" alt="Raffle">
-        <area shape="rect" coords="1414,670,1535,804" href="neonalley.html" alt="Neon Alley">
+        <area shape="rect" coords="186,93,626,470" href="overclock.html" alt="Club Overclock">
+        <area shape="rect" coords="393,71,1037,404" href="memory.html" alt="Memory">
+        <area shape="rect" coords="72,578,464,840" href="raffle.html" alt="Raffle">
+        <area shape="rect" coords="1357,652,1533,790" href="neonalley.html" alt="Neon Alley">
       </map>
 
       <!-- UI Buttons -->
@@ -124,6 +125,9 @@
           };
         });
       }
+
+      // --- IMAGE MAP RESIZER ---
+      if (window.imageMapResize) imageMapResize();
     };
 
     window.onbeforeunload = function () {
@@ -132,5 +136,7 @@
       sessionStorage.setItem('audioTime', audio.currentTime);
     };
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/image-map-resizer@1.0.10/js/imageMapResizer.min.js"></script>
 </body>
 </html>
