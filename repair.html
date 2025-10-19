@@ -63,12 +63,48 @@
 
   #back-button { top: 12px; left: 12px; }
   #sound-button { top: 12px; right: 12px; display: none; }
+
+  /* --- Dialog / Textbox --- */
+  .dialog-box, .retro-textbox {
+    position: absolute;
+    background-color: #000;
+    color: #fff;
+    font-size: 16px;
+    padding: 10px 20px;
+    border: 2px solid #fff;
+    text-align: center;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 1s ease-out;
+    z-index: 1000;
+  }
+
+  .dialog-box.fade-out, .retro-textbox.fade-out { opacity: 0; }
+
+  .dialog-option {
+    display: inline-block;
+    margin: 5px;
+    padding: 5px 10px;
+    background-color: #fff;
+    color: #000;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    pointer-events: auto;
+  }
 </style>
 </head>
 <body>
 <div class="game-window">
   <div id="map-container">
-    <img src="repair.png" id="map-image" alt="Repair">
+    <img src="repair.png" id="map-image" alt="Repair" usemap="#repairMap">
+    <map name="repairMap">
+      <area shape="rect" coords="100,400,350,750" href="#" onclick="showDialog(event,'npc1')" alt="Repair Person">
+      <area shape="rect" coords="700,420,950,780" href="#" onclick="showDialog(event,'npc2')" alt="Tool Rack">
+    </map>
+
     <button id="back-button" class="ui-button" onclick="window.location.href='rupture.html'">Back</button>
     <button id="sound-button" class="ui-button">Sound On</button>
   </div>
@@ -87,24 +123,43 @@
       audio = newAudio;
     }
 
-    const wasPlaying = sessionStorage.getItem('audioPlaying') === 'true';
-    const lastTime = parseFloat(sessionStorage.getItem('audioTime')) || 0;
-
-    if (wasPlaying && audio.paused) {
-      audio.currentTime = lastTime;
-      audio.play().catch(err => {
-        const btn = document.getElementById('sound-button');
-        btn.style.display = 'block';
-        btn.onclick = () => { audio.play(); btn.style.display = 'none'; };
-      });
+    if (sessionStorage.getItem('audioPlaying') === 'true') {
+      audio.currentTime = parseFloat(sessionStorage.getItem('audioTime')) || 0;
+      audio.play().catch(err => { document.getElementById('sound-button').style.display = 'block'; });
     }
   };
 
   window.onbeforeunload = function () {
     const audio = document.getElementById('main-audio');
-    sessionStorage.setItem('audioPlaying', audio.paused ? 'false' : 'true');
+    sessionStorage.setItem('audioPlaying', !audio.paused);
     sessionStorage.setItem('audioTime', audio.currentTime);
   };
+
+  // --- DIALOG ---
+  function showDialog(event, id) {
+    if (document.querySelector(`.dialog-box[data-id="${id}"]`) || document.querySelector('.retro-textbox')) return;
+    const dialog = document.createElement('div');
+    dialog.className = 'dialog-box';
+    dialog.setAttribute('data-id', id);
+    dialog.innerHTML = `
+      <p>Hello, I can help with repairs!</p>
+      <button class="dialog-option" onclick="updateDialog('${id}','Repair confirmed')">Repair</button>
+      <button class="dialog-option" onclick="updateDialog('${id}','Not now')">Not now</button>
+    `;
+    document.getElementById('map-container').appendChild(dialog);
+    const img = document.getElementById('map-image').getBoundingClientRect();
+    dialog.style.left = `${event.clientX - img.left - dialog.offsetWidth/2}px`;
+    dialog.style.top = `${event.clientY - img.top - dialog.offsetHeight/2}px`;
+    setTimeout(() => { dialog.classList.add('fade-out'); setTimeout(()=>dialog.remove(),1000); }, 10000);
+  }
+
+  function updateDialog(id, choice) {
+    const dialog = document.querySelector(`.dialog-box[data-id="${id}"]`);
+    if (dialog) {
+      dialog.innerHTML = `<p>${choice}</p>`;
+      setTimeout(()=>{ dialog.classList.add('fade-out'); setTimeout(()=>dialog.remove(),1000); },6000);
+    }
+  }
 </script>
 </body>
 </html>
