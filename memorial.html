@@ -63,12 +63,49 @@
 
   #back-button { top: 12px; left: 12px; }
   #sound-button { top: 12px; right: 12px; display: none; }
+
+  /* Dialog styles */
+  .dialog-box, .retro-textbox {
+    position: absolute;
+    background-color: #000;
+    color: #fff;
+    font-size: 16px;
+    padding: 10px 20px;
+    border: 2px solid #fff;
+    text-align: center;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 1s ease-out;
+    z-index: 1000;
+  }
+
+  .dialog-box.fade-out, .retro-textbox.fade-out { opacity: 0; }
+
+  .dialog-option {
+    display: inline-block;
+    margin: 5px;
+    padding: 5px 10px;
+    background-color: #fff;
+    color: #000;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    pointer-events: auto;
+  }
 </style>
 </head>
 <body>
 <div class="game-window">
   <div id="map-container">
-    <img src="memorial.png" id="map-image" alt="Memorial">
+    <img src="memorial.png" id="map-image" alt="Memorial" usemap="#memorialMap">
+    <map name="memorialMap">
+      <area shape="rect" coords="300,300,500,500" href="#" onclick="showDialog(event,'memorial1')" alt="Statue">
+      <area shape="rect" coords="700,350,950,600" href="#" onclick="showDialog(event,'memorial2')" alt="Plaque">
+      <area shape="rect" coords="500,650,700,750" href="#" onclick="showTextPopup(event)" alt="Bench">
+    </map>
+
     <button id="back-button" class="ui-button" onclick="window.location.href='rupture.html'">Back</button>
     <button id="sound-button" class="ui-button">Sound On</button>
   </div>
@@ -105,6 +142,44 @@
     sessionStorage.setItem('audioPlaying', audio.paused ? 'false' : 'true');
     sessionStorage.setItem('audioTime', audio.currentTime);
   };
+
+  // --- DIALOG & TEXT ---
+  function showDialog(event,id){
+    if(document.querySelector(`.dialog-box[data-id="${id}"]`) || document.querySelector('.retro-textbox')) return;
+    const dialog=document.createElement('div');
+    dialog.className='dialog-box';
+    dialog.setAttribute('data-id',id);
+    dialog.innerHTML=`
+      <p>You inspect ${id.replace('memorial','Memorial ')}.</p>
+      <button class="dialog-option" onclick="updateDialog('${id}','Read inscription')">Read</button>
+      <button class="dialog-option" onclick="updateDialog('${id}','Look around')">Look</button>
+    `;
+    document.getElementById('map-container').appendChild(dialog);
+    const img=document.getElementById('map-image').getBoundingClientRect();
+    dialog.style.left=`${event.clientX-img.left-dialog.offsetWidth/2}px`;
+    dialog.style.top=`${event.clientY-img.top-dialog.offsetHeight/2}px`;
+    setTimeout(()=>{dialog.classList.add('fade-out'); setTimeout(()=>dialog.remove(),1000);},10000);
+  }
+
+  function updateDialog(id,choice){
+    const dialog=document.querySelector(`.dialog-box[data-id="${id}"]`);
+    if(dialog){
+      dialog.innerHTML=`<p>${choice}</p>`;
+      setTimeout(()=>{dialog.classList.add('fade-out'); setTimeout(()=>dialog.remove(),1000);},6000);
+    }
+  }
+
+  function showTextPopup(event){
+    if(document.querySelector('.dialog-box') || document.querySelector('.retro-textbox')) return;
+    const textbox=document.createElement('div');
+    textbox.className='retro-textbox';
+    textbox.innerText="You sit for a moment...";
+    document.getElementById('map-container').appendChild(textbox);
+    const img=document.getElementById('map-image').getBoundingClientRect();
+    textbox.style.left=`${event.clientX-img.left-textbox.offsetWidth/2}px`;
+    textbox.style.top=`${event.clientY-img.top-textbox.offsetHeight/2}px`;
+    setTimeout(()=>{textbox.classList.add('fade-out'); setTimeout(()=>textbox.remove(),1000);},3000);
+  }
 </script>
 </body>
 </html>
