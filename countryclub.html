@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Country Club</title>
+<title>Lobby</title>
 
 <style>
   body {
@@ -74,15 +74,13 @@
 <body>
 <div class="game-window">
   <div id="map-container">
-    <img src="countryclub.png" id="map-image" alt="Country Club" usemap="#countryclub-map">
-
-    <map name="countryclub-map">
-      <!-- Example clickable areas (replace coords as needed) -->
-      <area shape="rect" coords="420,510,730,350" href="hole1.html" alt="Hole 1">
-      <area shape="rect" coords="870,550,1070,430" href="lobby.html" alt="Lobby">
+    <img src="lobby.png" id="map-image" alt="Lobby" usemap="#lobbyMap">
+    <map name="lobbyMap">
+      <area shape="rect" coords="364,373,533,689" href="hole1.html" alt="Hole 1">
+      <area shape="rect" coords="960,365,1160,694" href="hole1.html" alt="Hole 1">
     </map>
 
-    <button id="back-button" class="ui-button" onclick="window.location.href='mainpage.html'">Back</button>
+    <button id="back-button" class="ui-button" onclick="window.location.href='countryclub.html'">Back</button>
     <button id="sound-button" class="ui-button">Sound On</button>
   </div>
 </div>
@@ -91,10 +89,10 @@
   // --- IMAGE FIX: SCALE MAP AREAS ---
   function scaleImageMap() {
     const img = document.getElementById('map-image');
-    const map = document.querySelector('map[name="countryclub-map"]');
+    const map = document.querySelector('map[name="lobbyMap"]');
     const originalCoords = [
-      [420,510,730,350], // Hole 1
-      [870,550,1070,430] // Lobby
+      [364,373,533,689],
+      [960,365,1160,694]
     ];
 
     const rect = img.getBoundingClientRect();
@@ -114,7 +112,7 @@
   window.addEventListener('load', scaleImageMap);
   window.addEventListener('resize', scaleImageMap);
 
-  // --- AUDIO HANDLING ---
+  // --- AUDIO ---
   window.onload = function () {
     scaleImageMap();
 
@@ -134,10 +132,11 @@
     if (wasPlaying && audio.paused) {
       audio.currentTime = lastTime;
       audio.play().catch(() => {
-        const soundButton = document.getElementById('sound-button');
-        soundButton.style.display = 'block';
-        soundButton.onclick = () => {
-          audio.play().then(() => (soundButton.style.display = 'none'));
+        const btn = document.getElementById('sound-button');
+        btn.style.display = 'block';
+        btn.onclick = () => {
+          audio.play();
+          btn.style.display = 'none';
         };
       });
     }
