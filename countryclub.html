@@ -72,13 +72,14 @@
     <map name="countryclubMap">
       <area shape="rect" coords="678,753,917,863" href="lobby.html" alt="Lobby">
     </map>
+
     <button id="back-button" class="ui-button" onclick="window.location.href='rupture.html'">Back</button>
     <button id="sound-button" class="ui-button">Sound On</button>
   </div>
 </div>
 
 <script>
-  // --- AUDIO ---
+  // --- AUDIO HANDLING ---
   window.onload = function () {
     let audio = document.getElementById('main-audio');
     if (!audio) {
