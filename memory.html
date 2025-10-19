@@ -4,106 +4,54 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Memory</title>
-
 <style>
-  body {
-    margin: 0;
-    padding: 0;
-    background-color: #0d0d17;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-    font-family: "Courier New", monospace;
-  }
-
-  .game-window {
-    position: relative;
-    width: 1200px;
-    height: 800px;
-    border: 3px solid #444;
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: #000;
-    box-shadow: 0 0 20px rgba(0,0,0,0.8);
-  }
-
-  #map-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-
-  #map-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .ui-button {
-    position: absolute;
-    padding: 8px 16px;
-    background-color: rgba(255,255,255,0.9);
-    color: #000;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 14px;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-  }
-
-  .ui-button:hover {
-    background-color: #00ff88;
-    transform: scale(1.05);
-  }
-
-  #back-button { top: 12px; left: 12px; }
-  #sound-button { top: 12px; right: 12px; display: none; }
+  body { margin:0; padding:0; background-color:#0d0d17; display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; font-family:"Courier New", monospace; }
+  .game-window { position:relative; width:1200px; height:800px; border:3px solid #444; border-radius:8px; overflow:hidden; background-color:#000; box-shadow:0 0 20px rgba(0,0,0,0.8);}
+  #map-container { position:relative; width:100%; height:100%; }
+  #map-image { width:100%; height:100%; object-fit:cover; }
+  .ui-button { position:absolute; padding:8px 16px; background-color:rgba(255,255,255,0.9); color:#000; border:none; font-weight:bold; cursor:pointer; border-radius:4px; text-transform:uppercase; letter-spacing:1px; font-size:14px; transition: background-color 0.2s ease, transform 0.1s ease; }
+  .ui-button:hover { background-color:#00ff88; transform:scale(1.05); }
+  #back-button { top:12px; left:12px; }
+  #sound-button { top:12px; right:12px; display:none; }
 </style>
 </head>
 <body>
 <div class="game-window">
   <div id="map-container">
-    <img src="memory.png" id="map-image" alt="Memory">
+    <img src="memory.png" id="map-image" alt="Memory" usemap="#memoryMap">
+    <map name="memoryMap">
+      <area shape="rect" coords="150,150,450,450" href="#" onclick="alert('Memory Zone 1'); return false;">
+      <area shape="rect" coords="600,200,900,500" href="#" onclick="alert('Memory Zone 2'); return false;">
+    </map>
 
     <button id="back-button" class="ui-button" onclick="window.location.href='verge.html'">Back</button>
     <button id="sound-button" class="ui-button">Sound On</button>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/image-map-resizer@1.0.10/js/imageMapResizer.min.js"></script>
 <script>
-  // --- AUDIO ---
-  window.onload = function () {
+  window.onload = function() {
     let audio = document.getElementById('main-audio');
     if (!audio) {
-      const newAudio = document.createElement('audio');
-      newAudio.id = 'main-audio';
-      newAudio.src = 'ambient-noise.mp3';
-      newAudio.loop = true;
-      document.body.appendChild(newAudio);
-      audio = newAudio;
+      audio = document.createElement('audio');
+      audio.id = 'main-audio';
+      audio.src = 'ambient-noise.mp3';
+      audio.loop = true;
+      document.body.appendChild(audio);
     }
 
-    const wasPlaying = sessionStorage.getItem('audioPlaying') === 'true';
-    const lastTime = parseFloat(sessionStorage.getItem('audioTime')) || 0;
-
-    if (wasPlaying && audio.paused) {
-      audio.currentTime = lastTime;
-      audio.play().catch(err => {
-        const btn = document.getElementById('sound-button');
-        btn.style.display = 'block';
-        btn.onclick = () => { audio.play(); btn.style.display = 'none'; };
-      });
+    if (sessionStorage.getItem('audioPlaying') === 'true') {
+      audio.currentTime = parseFloat(sessionStorage.getItem('audioTime')) || 0;
+      audio.play().catch(() => { document.getElementById('sound-button').style.display = 'block'; });
     }
+
+    if (window.imageMapResize) imageMapResize();
   };
 
-  window.onbeforeunload = function () {
+  window.onbeforeunload = function() {
     const audio = document.getElementById('main-audio');
-    sessionStorage.setItem('audioPlaying', audio.paused ? 'false' : 'true');
+    sessionStorage.setItem('audioPlaying', !audio.paused);
     sessionStorage.setItem('audioTime', audio.currentTime);
   };
 </script>
