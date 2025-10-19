@@ -68,7 +68,13 @@
 <body>
 <div class="game-window">
   <div id="map-container">
-    <img src="neonalley.png" id="map-image" alt="Neon Alley">
+    <img src="neonalley.png" id="map-image" alt="Neon Alley" usemap="#neonAlleyMap">
+
+    <map name="neonAlleyMap">
+      <!-- Placeholder areas for future interactivity -->
+      <area shape="rect" coords="100,100,300,300" href="#" alt="Zone 1" onclick="alert('Zone 1 clicked'); return false;">
+      <area shape="rect" coords="400,200,600,400" href="#" alt="Zone 2" onclick="alert('Zone 2 clicked'); return false;">
+    </map>
 
     <button id="back-button" class="ui-button" onclick="window.location.href='verge.html'">Back</button>
     <button id="sound-button" class="ui-button">Sound On</button>
@@ -99,6 +105,9 @@
         btn.onclick = () => { audio.play(); btn.style.display = 'none'; };
       });
     }
+
+    // --- IMAGE MAP RESIZER ---
+    if (window.imageMapResize) imageMapResize();
   };
 
   window.onbeforeunload = function () {
@@ -107,5 +116,7 @@
     sessionStorage.setItem('audioTime', audio.currentTime);
   };
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/image-map-resizer@1.0.10/js/imageMapResizer.min.js"></script>
 </body>
 </html>
