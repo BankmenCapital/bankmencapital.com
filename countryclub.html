@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Country Club</title>
-
 <style>
   body {
     margin: 0;
@@ -17,7 +16,6 @@
     overflow: hidden;
     font-family: 'Courier New', monospace;
   }
-
   .game-window {
     position: relative;
     width: 1200px;
@@ -28,19 +26,16 @@
     background-color: #000;
     box-shadow: 0 0 20px rgba(0,0,0,0.8);
   }
-
   #map-container {
     position: relative;
     width: 100%;
     height: 100%;
   }
-
   #map-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-
   .ui-button {
     position: absolute;
     padding: 8px 16px;
@@ -55,12 +50,10 @@
     font-size: 14px;
     transition: background-color 0.2s ease, transform 0.1s ease;
   }
-
   .ui-button:hover {
     background-color: #00ff88;
     transform: scale(1.05);
   }
-
   #back-button { top: 12px; left: 12px; }
   #sound-button { top: 12px; right: 12px; display: none; }
 </style>
@@ -77,35 +70,36 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/image-map-resizer@1.0.10/js/imageMapResizer.min.js"></script>
 <script>
-  // --- AUDIO ---
   window.onload = function () {
     let audio = document.getElementById('main-audio');
     if (!audio) {
-      const newAudio = document.createElement('audio');
-      newAudio.id = 'main-audio';
-      newAudio.src = 'ambient-noise.mp3';
-      newAudio.loop = true;
-      document.body.appendChild(newAudio);
-      audio = newAudio;
+      audio = document.createElement('audio');
+      audio.id = 'main-audio';
+      audio.src = 'ambient-noise.mp3';
+      audio.loop = true;
+      document.body.appendChild(audio);
     }
 
-    const wasPlaying = sessionStorage.getItem('audioPlaying') === 'true';
-    const lastTime = parseFloat(sessionStorage.getItem('audioTime')) || 0;
-
-    if (wasPlaying && audio.paused) {
-      audio.currentTime = lastTime;
-      audio.play().catch(err => {
-        const btn = document.getElementById('sound-button');
-        btn.style.display = 'block';
-        btn.onclick = () => { audio.play(); btn.style.display = 'none'; };
+    if (sessionStorage.getItem('audioPlaying') === 'true') {
+      audio.currentTime = parseFloat(sessionStorage.getItem('audioTime')) || 0;
+      audio.play().catch(() => {
+        document.getElementById('sound-button').style.display = 'block';
+        document.getElementById('sound-button').onclick = () => {
+          audio.play().then(() => {
+            document.getElementById('sound-button').style.display = 'none';
+          });
+        };
       });
     }
+
+    if (window.imageMapResize) imageMapResize();
   };
 
   window.onbeforeunload = function () {
     const audio = document.getElementById('main-audio');
-    sessionStorage.setItem('audioPlaying', audio.paused ? 'false' : 'true');
+    sessionStorage.setItem('audioPlaying', !audio.paused);
     sessionStorage.setItem('audioTime', audio.currentTime);
   };
 </script>
