@@ -72,7 +72,6 @@
       padding: 10px 20px;
       border: 2px solid #fff;
       text-align: center;
-      pointer-events: none;
       opacity: 1;
       transition: opacity 1s ease-out;
     }
@@ -172,12 +171,11 @@
         turnOnButton.innerText = 'Turn on';
         turnOnButton.onclick = () => {
           container.remove();
-          showTextBox(event, 'Nothing Happens');
+          showTextBox({ clientX: event.clientX, clientY: event.clientY }, 'Nothing Happens');
         };
         container.appendChild(textbox);
         container.appendChild(turnOnButton);
         document.getElementById('map-container').appendChild(container);
-        // Position the container at the click location
         container.style.left = `${x}px`;
         container.style.top = `${y}px`;
         container.style.transform = 'translate(-50%, -50%)';
@@ -190,6 +188,7 @@
         textbox.className = 'retro-textbox';
         textbox.innerText = text;
         document.getElementById('map-container').appendChild(textbox);
+        textbox.style.position = 'absolute';
         textbox.style.left = `${x}px`;
         textbox.style.top = `${y}px`;
         textbox.style.transform = 'translate(-50%, -50%)';
