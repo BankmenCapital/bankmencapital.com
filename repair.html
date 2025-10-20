@@ -102,7 +102,6 @@
     <img src="repair.png" id="map-image" alt="Repair" usemap="#repairMap">
     <map name="repairMap">
       <area shape="rect" coords="100,400,350,750" href="#" onclick="showDialog(event,'npc1')" alt="Repair Person">
-      <area shape="rect" coords="700,420,950,780" href="#" onclick="showDialog(event,'npc2')" alt="Tool Rack">
     </map>
 
     <button id="back-button" class="ui-button" onclick="window.location.href='rupture.html'">Back</button>
@@ -142,9 +141,8 @@
     dialog.className = 'dialog-box';
     dialog.setAttribute('data-id', id);
     dialog.innerHTML = `
-      <p>Hello, I can help with repairs!</p>
-      <button class="dialog-option" onclick="updateDialog('${id}','Repair confirmed')">Repair</button>
-      <button class="dialog-option" onclick="updateDialog('${id}','Not now')">Not now</button>
+      <p>Hey man were closed.</p>
+
     `;
     document.getElementById('map-container').appendChild(dialog);
     const img = document.getElementById('map-image').getBoundingClientRect();
