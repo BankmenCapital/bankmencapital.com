@@ -102,7 +102,7 @@
     <img src="memorial.png" id="map-image" alt="Memorial" usemap="#memorialMap">
     <map name="memorialMap">
       <area shape="rect" coords="300,300,500,500" href="#" onclick="showDialog(event,'memorial1')" alt="Statue">
-      <area shape="rect" coords="700,350,950,600" href="#" onclick="showDialog(event,'memorial2')" alt="Plaque">
+
       <area shape="rect" coords="500,650,700,750" href="#" onclick="showTextPopup(event)" alt="Bench">
     </map>
 
@@ -150,9 +150,9 @@
     dialog.className='dialog-box';
     dialog.setAttribute('data-id',id);
     dialog.innerHTML=`
-      <p>You inspect ${id.replace('memorial','Memorial ')}.</p>
-      <button class="dialog-option" onclick="updateDialog('${id}','Read inscription')">Read</button>
-      <button class="dialog-option" onclick="updateDialog('${id}','Look around')">Look</button>
+      <p>You inspect the memorial</p>
+      <button class="dialog-option" onclick="updateDialog('${id}','Dedicated to the brave and unpaid moderators. May we never forget their relentless support on mint day: MaxdeXBT, HennasVN, EVEYNFT, Shake_Sol')">Read</button>
+      <button class="dialog-option" onclick="updateDialog('${id}','No one visits this place')">Look</button>
     `;
     document.getElementById('map-container').appendChild(dialog);
     const img=document.getElementById('map-image').getBoundingClientRect();
