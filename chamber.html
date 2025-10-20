@@ -65,7 +65,6 @@
       display: none;
     }
     .retro-textbox {
-      position: absolute;
       background-color: #000;
       color: #fff;
       font-family: 'Courier New', monospace;
@@ -76,16 +75,12 @@
       pointer-events: none;
       opacity: 1;
       transition: opacity 1s ease-out;
-      z-index: 1000;
     }
     .retro-textbox.fade-out {
       opacity: 0;
     }
     .popup-container {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -161,6 +156,11 @@
       if (document.querySelector('.retro-textbox') || document.querySelector('.popup-container')) {
         return; // Do nothing if a text box or popup is already present
       }
+      const img = document.getElementById('map-image');
+      const rect = img.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
       if (showButton) {
         const container = document.createElement('div');
         container.className = 'popup-container';
@@ -177,12 +177,10 @@
         container.appendChild(textbox);
         container.appendChild(turnOnButton);
         document.getElementById('map-container').appendChild(container);
-        const img = document.getElementById('map-image');
-        const rect = img.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        textbox.style.left = `${x - textbox.offsetWidth / 2}px`;
-        textbox.style.top = `${y - textbox.offsetHeight / 2 - (turnOnButton.offsetHeight + 10) / 2}px`;
+        // Position the container at the click location
+        container.style.left = `${x}px`;
+        container.style.top = `${y}px`;
+        container.style.transform = 'translate(-50%, -50%)';
         setTimeout(() => {
           container.classList.add('fade-out');
           setTimeout(() => container.remove(), 1000); // Remove after fade-out (1s)
@@ -192,12 +190,9 @@
         textbox.className = 'retro-textbox';
         textbox.innerText = text;
         document.getElementById('map-container').appendChild(textbox);
-        const img = document.getElementById('map-image');
-        const rect = img.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        textbox.style.left = `${x - textbox.offsetWidth / 2}px`;
-        textbox.style.top = `${y - textbox.offsetHeight / 2}px`;
+        textbox.style.left = `${x}px`;
+        textbox.style.top = `${y}px`;
+        textbox.style.transform = 'translate(-50%, -50%)';
         setTimeout(() => {
           textbox.classList.add('fade-out');
           setTimeout(() => textbox.remove(), 1000); // Remove after fade-out (1s)
