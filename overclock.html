@@ -64,6 +64,7 @@
   #back-button { top: 12px; left: 12px; }
   #sound-button { top: 12px; right: 12px; display: none; }
 
+  /* --- FIXED SECTION --- */
   .dialog-box, .retro-textbox {
     position: absolute;
     background-color: #000;
@@ -72,10 +73,19 @@
     padding: 10px 20px;
     border: 2px solid #fff;
     text-align: center;
-    pointer-events: none;
     opacity: 1;
     transition: opacity 1s ease-out;
     z-index: 1000;
+  }
+
+  /* Allow dialog interaction */
+  .dialog-box {
+    pointer-events: auto;
+  }
+
+  /* Still prevents clicks on text popups */
+  .retro-textbox {
+    pointer-events: none;
   }
 
   .dialog-box.fade-out, .retro-textbox.fade-out { opacity: 0; }
@@ -101,8 +111,6 @@
     <img src="overclock.png" id="map-image" alt="Club Overclock" usemap="#overclockMap">
 
     <map name="overclockMap">
-      <area shape="rect" coords="16,474,319,956" href="#" onclick="showDialog(event, 'person1')" alt="Person 1">
-      
       <area shape="rect" coords="783,613,900,908" href="#" onclick="showTextPopup(event); return false;" alt="Person 3">
       <area shape="rect" coords="1201,454,1506,918" href="#" onclick="showDialog(event, 'person4')" alt="Person 4">
     </map>
@@ -155,9 +163,9 @@
     dialog.setAttribute('data-id', id);
     dialog.innerHTML = `
       <p>test message</p>
-      <button class="dialog-option" onclick="updateDialog('${id}','If your'e asking that question, you shouldn't be here kid')">Where am I?</button>
-      <button class="dialog-option" onclick="updateDialog('${id}','two')">two</button>
-      <button class="dialog-option" onclick="updateDialog('${id}','three')">three</button>
+      <button class="dialog-option" onclick="updateDialog('${id}','If you\\'re asking that question, you shouldn\\'t be here kid')">Where am I?</button>
+      <button class="dialog-option" onclick="updateDialog('${id}','Don\\'t mention names like that around here')">Where's Titan?</button>
+      <button class="dialog-option" onclick="updateDialog('${id}','Bankmen Finance happened, or didn\\'t happen is a better way to put it. All the money is gone, everything is in a state of limbo. Grab a drink and shut up unless you have any better ideas.')">What Happened to this place?</button>
     `;
     document.getElementById('map-container').appendChild(dialog);
     const img = document.getElementById('map-image').getBoundingClientRect();
