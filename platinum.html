@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bankmen Platinum — MVP</title>
+
+  <!-- Tailwind Play CDN for quick styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* small custom tweaks on top of Tailwind */
+    body {
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(255,255,255,0.02), transparent 10%),
+                  radial-gradient(900px 400px at 90% 90%, rgba(255,255,255,0.02), transparent 10%),
+                  #0b0b10;
+      color: #e6eef8;
+      min-height: 100vh;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.04);
+      backdrop-filter: blur(6px);
+    }
+    .nft-thumb {
+      image-rendering: -webkit-optimize-contrast;
+      object-fit: cover;
+    }
+    .locked {
+      filter: grayscale(70%) opacity(0.7);
+    }
+  </style>
+</head>
+<body class="p-6">
+
+  <div class="max-w-5xl mx-auto">
+    <header class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-extrabold tracking-tight">Bankmen Platinum</h1>
+        <p class="text-sm text-gray-300 mt-1">90-day season · Battle Pass MVP · Wallet-gated access</p>
+      </div>
+      <div id="walletArea" class="text-right">
+        <button id="connectBtn" class="px-4 py-2 rounded-full card hover:shadow-lg transition">Connect Wallet</button>
+      </div>
+    </header>
+
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Left column: Gate / verification -->
+      <section class="card p-5 rounded-xl lg:col-span-1">
+        <h2 class="text-lg font-semibold mb-3">Access</h2>
+        <div id="statusBlock" class="text-sm text-gray-300">
+          <p id="statusText">Please connect your wallet to access Bankmen Platinum.</p>
+        </div>
+
+        <div id="verifyBlock" class="mt-4 hidden">
+          <button id="verifyBtn" class="w-full px-4 py-2 rounded-md bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-700">
+            Verify ownership & sign
+          </button>
+          <p class="text-xs text-gray-400 mt-2">Signing proves ownership of the connected wallet. No funds are transferred.</p>
+        </div>
+
+        <div id="notHolder" class="mt-4 hidden text-red-400">
+          <p>Not a verified Bankmen holder (no allowed mints found). If you believe this is an error, ensure you're connected with the correct wallet and that the mint(s) are added to the allowlist.</p>
+        </div>
+
+        <div id="holderInfo" class="mt-4 hidden">
+          <p class="text-sm">Verified as Bankmen holder: <span id="shortAddr" class="font-mono"></span></p>
+          <p class="text-sm text-gray-400 mt-1">Signed at: <span id="signedAt"></span></p>
+        </div>
+
+        <div id="xpArea" class="mt-4 hidden">
+          <p class="text-sm text-gray-300 mb-2">XP</p>
+          <div class="w-full bg-gray-800 rounded-full h-4">
+            <div id="xpBar" class="h-4 rounded-full" style="width:0%; background: linear-gradient(90deg,#b8f2ff,#9be7ff);"></div>
+          </div>
+          <div class="flex items-center justify-between mt-2 text-sm">
+            <span id="xpText">0 XP</span>
+            <button id="claimPlaceholder" class="px-2 py-1 text-xs rounded card">Claim (demo)</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Middle: NFT display -->
+      <section class="card p-5 rounded-xl lg:col-span-1">
+        <h2 class="text-lg font-semibold mb-3">Your Bankmen NFTs</h2>
+        <div id="nftGrid" class="grid grid-cols-2 gap-3">
+          <!-- thumbnails injected here -->
+        </div>
+        <p id="noNftHint" class="text-xs text-gray-400 mt-3">If your NFTs don't appear, ensure the wallet is the same one that holds them and that the mint(s) are in the allowlist (MVP).</p>
+      </section>
+
+      <!-- Right: Calendar / Battle Pass -->
+      <section class="card p-5 rounded-xl lg:col-span-1">
+        <h2 class="text-lg font-semibold mb-3">Season 1 — Battle Pass (Locked)</h2>
+        <p class="text-xs text-gray-400">12 levels · Season duration: 90 days · Weekly quests unlock</p>
+
+        <div class="grid grid-cols-3 gap-3 mt-4">
+          <!-- 12 locked cells -->
+          <template id="passCell">
+            <div class="p-3 rounded-lg text-center border border-dashed border-white/5 locked">
+              <div class="text-sm font-semibold">Level</div>
+              <div class="text-xs text-gray-400 mt-1">Locked</div>
+            </div>
+          </template>
+        </div>
+
+        <div class="mt-4 text-xs text-gray-400">
+          <p>Weekly quests and claim UI will be implemented in the next iterations. For now, progress and XP are stored per-wallet (localStorage). See code comments for Firebase integration steps.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="mt-6 text-xs text-gray-500">
+      <p>Bankmen Capital — MVP. This page verifies ownership for the listed test mints only (easy to expand).</p>
+    </footer>
+  </div>
+
+  <script>
+  /************************************************************************
+   *  Bankmen Platinum — Single-file MVP
+   *
+   *  - Connects Phantom / compatible wallet via window.solana
+   *  - Checks token accounts for mints in ALLOWED_MINTS (simple allowlist MVP)
+   *  - Prompts user to sign a verification message
+   *  - Shows a minimal dashboard with XP (persisted to localStorage per wallet)
+   *
+   *  NOTE: For full collection-level verification (Metaplex collection checks),
+   *  the next step is to either:
+   *    - integrate Metaplex JS / on-chain metadata parsing, or
+   *    - use an indexing API (Helius / SolanaFM / other)
+   *
+   *  To extend for production:
+   *    - Replace ALLOWED_MINTS with a dynamic list or collection-derived check
+   *    - Replace localStorage with Firestore/Firebase or another DB keyed by wallet
+   *
+   ************************************************************************/
+
+  (function () {
+    // ---------------- CONFIG - Edit these for testing / expansion ----------------
+    // Single-file MVP uses an "allowlist" of mint addresses we consider valid Bankmen NFTs.
+    const ALLOWED_MINTS = [
+      // The one you provided — already included for testing:
+      "E7q86nBvHT4qdeSpuEci1vtGvGR7gp8QC4RdUTHrVZhh",
+      // Add more mint addresses here as needed to test additional tokens.
+    ];
+
+    // Optional mapping: mint -> metadata JSON URI (so we can display an image/name).
+    // I included the metadata URI you supplied (trimmed). If you have the full JSON URL for other mints, add them here.
+    const MINT_METADATA_URI = {
+      "E7q86nBvHT4qdeSpuEci1vtGvGR7gp8QC4RdUTHrVZhh":
+        "https://gateway.pinit.io/ipfs/QmdqV9BwhqqRymciXKu1SwJHNMNanosDpUk72aMjBP7e1q/2.json"
+    };
+
+    // Public RPC endpoint for simple calls in the MVP. (Mainnet)
+    const RPC_ENDPOINT = "https://api.mainnet-beta.solana.com";
+
+    // XP defaults and storage key prefix
+    const STORAGE_PREFIX = "bankmen_platinum_v1_";
+
+    // ------------------------------------------------------------------------------
+
+    // UI elements
+    const connectBtn = document.getElementById("connectBtn");
+    const statusText = document.getElementById("statusText");
+    const verifyBlock = document.getElementById("verifyBlock");
+    const verifyBtn = document.getElementById("verifyBtn");
+    const notHolder = document.getElementById("notHolder");
+    const holderInfo = document.getElementById("holderInfo");
+    const shortAddr = document.getElementById("shortAddr");
+    const signedAt = document.getElementById("signedAt");
+    const nftGrid = document.getElementById("nftGrid");
+    const noNftHint = document.getElementById("noNftHint");
+    const xpArea = document.getElementById("xpArea");
+    const xpText = document.getElementById("xpText");
+    const xpBar = document.getElementById("xpBar");
+    const passTemplate = document.getElementById("passCell");
+    const passGrid = document.querySelector(".grid.grid-cols-3");
+
+    // state
+    let provider = null;
+    let currentPubkey = null;
+    let ownedMints = []; // allowed mints owned by current wallet
+    let signed = false;
+
+    // helper: short address for display
+    function shortAddrStr(a) {
+      return a ? a.slice(0,4) + "..." + a.slice(-4) : "";
+    }
+
+    // build pass grid (12 cells)
+    function buildPassGrid() {
+      passGrid.innerHTML = "";
+      for (let i=1;i<=12;i++) {
+        const el = passTemplate.content.cloneNode(true);
+        const container = el.querySelector("div");
+        container.querySelector(".text-sm").textContent = `Level ${i}`;
+        passGrid.appendChild(el);
+      }
+    }
+
+    buildPassGrid();
+
+    // connect wallet (Phantom-compatible)
+    async function connectWallet() {
+      if (window.solana && window.solana.isPhantom) {
+        provider = window.solana;
+      } else if (window.solana) {
+        provider = window.solana; // backpack / other injected wallets often also expose window.solana
+      } else {
+        // no injected provider
+        statusText.innerHTML = `
+          <span class="text-red-400">No injected Solana wallet found in this browser.</span>
+          <div class="mt-2 text-xs text-gray-400">Recommended: Phantom extension (https://phantom.app/) — connect and refresh.</div>
+        `;
+        return;
+      }
+
+      try {
+        const res = await provider.connect();
+        currentPubkey = res.publicKey.toString?.() ?? (res.publicKey?.toBase58?.() ?? res.publicKey);
+        statusText.textContent = "Connected: " + shortAddrStr(currentPubkey);
+        connectBtn.textContent = "Connected";
+        connectBtn.classList.add("opacity-80");
+        shortAddr.textContent = shortAddrStr(currentPubkey);
+
+        // After connecting, check for allowed mints
+        await checkAllowedMints(currentPubkey);
+      } catch (err) {
+        console.error("connect error", err);
+        statusText.textContent = "Connection failed (see console).";
+      }
+    }
+
+    // checks token accounts for the owner's mints and matches against ALLOWED_MINTS
+    async function checkAllowedMints(ownerPubkey) {
+      statusText.textContent = "Checking token accounts for Bankmen NFTs...";
+      // JSON-RPC getParsedTokenAccountsByOwner
+      const body = {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "getParsedTokenAccountsByOwner",
+        params: [
+          ownerPubkey,
+          { programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" },
+          { encoding: "jsonParsed" }
+        ]
+      };
+
+      try {
+        const resp = await fetch(RPC_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        }).then(r => r.json());
+
+        const accounts = (resp.result?.value ?? []);
+        // filter NFTs and check if their mint is in allowed list
+        const foundMints = [];
+        for (const acc of accounts) {
+          const parsed = acc.account?.data?.parsed;
+          if (!parsed) continue;
+          const info = parsed.info;
+          const tokenAmount = info?.tokenAmount;
+          // heuristics: NFTs are usually decimals === 0 and amount === "1"
+          if (tokenAmount && tokenAmount.decimals === 0 && tokenAmount.amount === "1") {
+            const mint = info.mint;
+            if (ALLOWED_MINTS.includes(mint)) foundMints.push(mint);
+          }
+        }
+
+        if (foundMints.length === 0) {
+          // not a holder
+          notHolder.classList.remove("hidden");
+          verifyBlock.classList.add("hidden");
+          holderInfo.classList.add("hidden");
+          xpArea.classList.add("hidden");
+          nftGrid.innerHTML = "";
+          statusText.textContent = "No Bankmen NFTs found in this wallet.";
+          return;
+        }
+
+        // owner is holder
+        notHolder.classList.add("hidden");
+        verifyBlock.classList.remove("hidden");
+        statusText.textContent = "Bankmen NFT(s) detected — please verify by signing.";
+        ownedMints = foundMints;
+        // show thumbnails if metadata URIs exist in mapping
+        renderOwnedNfts(foundMints);
+
+      } catch (err) {
+        console.error("RPC error", err);
+        statusText.textContent = "Could not query token accounts (RPC error).";
+      }
+    }
+
+    // render owned NFTs (thumbnails) using MINT_METADATA_URI mapping
+    function renderOwnedNfts(mints) {
+      nftGrid.innerHTML = "";
+      for (const m of mints) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "rounded-lg overflow-hidden border card p-1";
+        const img = document.createElement("img");
+        img.className = "w-full h-32 nft-thumb";
+        const metaUri = MINT_METADATA_URI[m];
+        if (metaUri) {
+          // try fetch metadata JSON
+          fetch(metaUri).then(r => r.json()).then(json => {
+            const image = json.image || json.image_url || json.image_uri || json.imageUrl || json.properties?.image;
+            const name = json.name || m;
+            if (image) {
+              img.src = image.replace(/^ipfs:\/\/ipfs\//, "https://ipfs.io/ipfs/").replace(/^ipfs:\/\//, "https://ipfs.io/ipfs/");
+            } else {
+              img.src = "";
+            }
+            const caption = document.createElement("div");
+            caption.className = "text-xs mt-1 text-gray-200";
+            caption.textContent = name;
+            wrapper.appendChild(img);
+            wrapper.appendChild(caption);
+          }).catch(e => {
+            console.warn("couldn't fetch metadata", e);
+            img.src = "";
+            wrapper.appendChild(img);
+          });
+        } else {
+          img.alt = "metadata not provided for this mint";
+          wrapper.appendChild(img);
+          const caption = document.createElement("div");
+          caption.className = "text-xs mt-1 text-gray-400";
+          caption.textContent = m;
+          wrapper.appendChild(caption);
+        }
+        nftGrid.appendChild(wrapper);
+      }
+    }
+
+    // request signature for verification (Phantom-style)
+    async function requestSignature() {
+      if (!provider || !currentPubkey) {
+        statusText.textContent = "Wallet not connected.";
+        return;
+      }
+      if (ownedMints.length === 0) {
+        statusText.textContent = "No allowed Bankmen mints found.";
+        return;
+      }
+
+      const messageText = `Bankmen Platinum verification\nWallet: ${currentPubkey}\nTime: ${new Date().toISOString()}\nI verify I hold Bankmen NFTs for Bankmen Platinum access.`;
+      const enc = new TextEncoder();
+      const messageBytes = enc.encode(messageText);
+
+      try {
+        // Phantom-style signMessage
+        const signedResp = await provider.signMessage(messageBytes, 'utf8'); // some wallets require provider.signMessage(..., 'utf8')
+        // Phantom returns { signature: Uint8Array } or { signature } depending on provider
+        // but we don't need to check signature server-side in MVP; we just mark signed = true.
+        signed = true;
+        signedAt.textContent = new Date().toLocaleString();
+        holderInfo.classList.remove("hidden");
+        verifyBlock.classList.add("hidden");
+        statusText.textContent = "Signed — access granted.";
+        xpArea.classList.remove("hidden");
+
+        // initialize XP for wallet if none
+        const xpKey = STORAGE_PREFIX + currentPubkey;
+        if (!localStorage.getItem(xpKey)) {
+          localStorage.setItem(xpKey, JSON.stringify({ xp: 0 }));
+        }
+        updateXpUI();
+
+      } catch (err) {
+        console.error("sign error", err);
+        statusText.textContent = "Signing failed or was cancelled.";
+      }
+    }
+
+    // XP helpers
+    function getXpForWallet() {
+      if (!currentPubkey) return 0;
+      const xpKey = STORAGE_PREFIX + currentPubkey;
+      try {
+        const raw = localStorage.getItem(xpKey);
+        if (!raw) return 0;
+        const parsed = JSON.parse(raw);
+        return parsed.xp || 0;
+      } catch (e) { return 0; }
+    }
+
+    function setXpForWallet(val) {
+      if (!currentPubkey) return;
+      const xpKey = STORAGE_PREFIX + currentPubkey;
+      localStorage.setItem(xpKey, JSON.stringify({ xp: val }));
+      updateXpUI();
+    }
+
+    function updateXpUI() {
+      const xp = getXpForWallet();
+      xpText.textContent = `${xp} XP`;
+      const pct = Math.min(100, Math.round((xp / 1000) * 100)); // example: 1000 XP per level baseline
+      xpBar.style.width = pct + "%";
+    }
+
+    // Demo claim button (adds XP) — in production, claims would be verified
+    document.getElementById("claimPlaceholder").addEventListener("click", () => {
+      if (!currentPubkey) {
+        alert("Connect wallet first.");
+        return;
+      }
+      const cur = getXpForWallet();
+      const newXp = cur + 50; // demo +50 xp
+      setXpForWallet(newXp);
+    });
+
+    // UI event wiring
+    connectBtn.addEventListener("click", connectWallet);
+    verifyBtn.addEventListener("click", requestSignature);
+
+    // initial UI
+    statusText.textContent = "Please connect your wallet to continue.";
+
+    // ---------- Helpful notes to expand (in-code comments for you) ----------
+    // * To expand to a full collection-level verification:
+    //   - Use Metaplex JS or query on-chain metadata PDAs to inspect collection key for each NFT
+    //   - Or use an indexing API (Helius, SolanaFM, SolanaScan) to list NFTs by owner and check collection
+    //
+    // * To persist XP safely server-side (recommended):
+    //   - Provision a Firebase project + Firestore or Realtime DB
+    //   - Add your Firebase config below and replace localStorage calls with secure calls:
+    //       firebase.initializeApp({...});
+    //       - On sign, create a DB record keyed by wallet pubkey
+    //       - Use security rules to allow writes only if signed message is validated server-side
+    //
+    // * To display NFT metadata for arbitrary mints:
+    //   - For each mint found, derive its metadata PDA and fetch the on-chain account (or use an indexer)
+    //   - Parse the metadata to get the URI, then fetch the JSON for image/name/attributes
+    //
+    // ---------------------------------------------------------------------
+
+    // Auto-detect and show simple provider hint (if window.solana exists but not Phantom)
+    if (window.solana && !window.solana.isPhantom) {
+      // still ok; keep connect button text friendly
+      connectBtn.textContent = "Connect Wallet";
+    }
+
+    // expose for debugging
+    window.__bankmenMVP = {
+      ALLOWED_MINTS,
+      MINT_METADATA_URI,
+      RPC_ENDPOINT,
+      connectWallet,
+      checkAllowedMints,
+      requestSignature,
+      getXpForWallet,
+      setXpForWallet
+    };
+
+  })();
+  </script>
+</body>
+</html>
