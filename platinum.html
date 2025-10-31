@@ -4,13 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bankmen Platinum Access</title>
-  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-base@latest/lib/cjs/index.iife.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-wallets@latest/lib/cjs/index.iife.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-react-ui@latest/lib/cjs/index.iife.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-wallets@latest/lib/cjs/index.iife.js"></script>
-  <script src="https://unpkg.com/@metaplex-foundation/js@latest/dist/index.iife.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@solana/web3.js@1.91.3/lib/index.iife.min.js"></script>
   <style>
     body {
       background-color: #0a0a0a;
@@ -70,76 +65,91 @@
   </div>
 
 <script>
-  const COLLECTION_ADDRESS = "GPtMdqNwNFnZGojyxEseXviJUZiqHyHDzWySjSHFup7J";
-  const UPDATE_AUTHORITY = "4A644enxADhwaMGsXL4zngnfT2kXRQMjubtQFFrGQb7T";
-  const network = "https://api.mainnet-beta.solana.com";
+const COLLECTION_ADDRESS = "GPtMdqNwNFnZGojyxEseXviJUZiqHyHDzWySjSHFup7J";
+const UPDATE_AUTHORITY = "4A644enxADhwaMGsXL4zngnfT2kXRQMjubtQFFrGQb7T";
+const SOLANA_RPC = "https://api.mainnet-beta.solana.com";
 
-  const connectButton = document.getElementById("connectButton");
-  const dashboard = document.getElementById("dashboard");
-  const connectSection = document.getElementById("connect-section");
-  const status = document.getElementById("status");
-  const nftGrid = document.getElementById("nftGrid");
-  const walletAddressEl = document.getElementById("walletAddress");
+const connectButton = document.getElementById("connectButton");
+const dashboard = document.getElementById("dashboard");
+const connectSection = document.getElementById("connect-section");
+const status = document.getElementById("status");
+const nftGrid = document.getElementById("nftGrid");
+const walletAddressEl = document.getElementById("walletAddress");
 
-  let wallet, provider;
-
-  async function connectWallet() {
-    try {
-      provider = window.solana;
-      if (!provider || !provider.isPhantom) {
-        alert("Please install Phantom Wallet to connect.");
-        return;
-      }
-      const resp = await provider.connect();
-      wallet = resp.publicKey.toString();
-      walletAddressEl.textContent = "Wallet: " + wallet;
-      status.textContent = "Checking NFT ownership...";
-      await verifyOwnership(wallet);
-    } catch (err) {
-      console.error(err);
-      status.textContent = "Connection failed.";
-    }
+async function connectWallet() {
+  if (!window.solana || !window.solana.isPhantom) {
+    alert("Please install Phantom wallet.");
+    return;
   }
 
-  async function verifyOwnership(walletAddress) {
-    try {
-      const metaplex = new metaplex.Metaplex(new solanaWeb3.Connection(network));
-      const owner = new solanaWeb3.PublicKey(walletAddress);
-      const nfts = await metaplex.nfts().findAllByOwner({ owner });
+  try {
+    const resp = await window.solana.connect();
+    const wallet = resp.publicKey.toString();
+    walletAddressEl.textContent = "Wallet: " + wallet;
+    status.textContent = "Checking NFT ownership...";
 
-      const bankmenNfts = nfts.filter(nft =>
-        (nft.collection && nft.collection.address && nft.collection.address.toBase58() === COLLECTION_ADDRESS)
-        || (nft.updateAuthorityAddress && nft.updateAuthorityAddress.toBase58() === UPDATE_AUTHORITY)
+    const ownsNFT = await verifyOwnership(wallet);
+    if (ownsNFT) {
+      status.textContent = "";
+      connectSection.classList.add("hidden");
+      dashboard.classList.remove("hidden");
+      await window.solana.signMessage(new TextEncoder().encode("I verify my wallet as a Bankmen Capital holder."));
+    } else {
+      status.textContent = "❌ Not a verified Bankmen holder.";
+    }
+  } catch (err) {
+    console.error("Error:", err);
+    status.textContent = "Connection or verification failed.";
+  }
+}
+
+async function verifyOwnership(walletAddress) {
+  const connection = new solanaWeb3.Connection(SOLANA_RPC);
+  const owner = new solanaWeb3.PublicKey(walletAddress);
+
+  // Fetch all token accounts for the wallet
+  const tokenAccounts = await connection.getParsedTokenAccountsByOwner(owner, { programId: solanaWeb3.TOKEN_PROGRAM_ID });
+
+  let found = false;
+  for (let acc of tokenAccounts.value) {
+    const amount = acc.account.data.parsed.info.tokenAmount;
+    if (amount.amount === "1" && amount.decimals === 0) {
+      const mint = acc.account.data.parsed.info.mint;
+      const metadataPDA = await solanaWeb3.PublicKey.findProgramAddress(
+        [
+          Buffer.from("metadata"),
+          new solanaWeb3.PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s").toBuffer(),
+          new solanaWeb3.PublicKey(mint).toBuffer(),
+        ],
+        new solanaWeb3.PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s")
       );
 
-      if (bankmenNfts.length > 0) {
-        status.textContent = "";
-        connectSection.classList.add("hidden");
-        dashboard.classList.remove("hidden");
-
-        for (const nft of bankmenNfts) {
-          if (nft.json?.image) {
-            const img = document.createElement("img");
-            img.src = nft.json.image;
-            img.alt = nft.name;
-            img.className = "rounded-xl border border-neutral-700 shadow";
-            nftGrid.appendChild(img);
+      const accInfo = await connection.getAccountInfo(metadataPDA[0]);
+      if (accInfo) {
+        const metadata = accInfo.data.toString("utf8");
+        if (metadata.includes(COLLECTION_ADDRESS) || metadata.includes(UPDATE_AUTHORITY)) {
+          found = true;
+          const jsonMatch = metadata.match(/https?:\/\/[^\s"]+/);
+          if (jsonMatch) {
+            try {
+              const res = await fetch(jsonMatch[0]);
+              const json = await res.json();
+              if (json.image) {
+                const img = document.createElement("img");
+                img.src = json.image;
+                img.className = "rounded-xl border border-neutral-700 shadow";
+                nftGrid.appendChild(img);
+              }
+            } catch (e) { console.warn("Image load fail"); }
           }
         }
-
-        await provider.signMessage(
-          new TextEncoder().encode("I verify my wallet as a Bankmen Capital holder.")
-        );
-      } else {
-        status.textContent = "❌ Not a verified Bankmen holder.";
       }
-    } catch (err) {
-      console.error("Verification error:", err);
-      status.textContent = "Error verifying ownership.";
     }
   }
+  return found;
+}
 
-  connectButton.addEventListener("click", connectWallet);
+connectButton.addEventListener("click", connectWallet);
 </script>
 </body>
 </html>
