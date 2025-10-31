@@ -3,141 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bankmen Capital Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@solana/web3.js@1.95.2/lib/index.iife.min.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-base@0.9.27/lib/umd/index.min.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-wallets@0.19.27/lib/umd/index.min.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-react-ui@0.9.39/lib/umd/index.min.js"></script>
+  <title>Bankmen Platinum</title>
+  <script src="https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-base@0.9.27/lib/index.iife.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-wallets@0.19.37/lib/index.iife.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-react-ui@0.9.39/lib/index.iife.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.79.0/lib/index.iife.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.4/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body { background: #0d0d17; color: #fff; font-family: 'Arial', sans-serif; }
+    .dashboard { display: none; padding: 2rem; }
+    .nft-gallery { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
+    .nft-item { width: 120px; height: 120px; border: 2px solid #ffd700; border-radius: 8px; overflow: hidden; background: #111; display: flex; justify-content: center; align-items: center; }
+    .locked { opacity: 0.3; }
+  </style>
 </head>
-<body class="bg-[#0b0b12] text-white flex flex-col items-center justify-center h-screen font-sans">
-  <!-- Locked screen -->
-  <div id="locked" class="flex flex-col items-center">
-    <h1 class="text-3xl font-bold mb-4">Bankmen Capital</h1>
-    <p class="mb-6 text-gray-400 text-center max-w-sm">Access restricted to verified Bankmen NFT holders.</p>
-    <button id="connectButton" class="bg-indigo-600 hover:bg-indigo-700 px-6 py-2 rounded-lg font-semibold">Connect Wallet</button>
-    <p id="status" class="text-red-400 mt-4"></p>
+<body class="flex flex-col items-center justify-center min-h-screen">
+
+  <h1 class="text-4xl font-bold mb-6">Bankmen Platinum</h1>
+  
+  <div id="wallet-section" class="flex flex-col items-center">
+    <button id="connect-btn" class="px-6 py-3 bg-yellow-600 text-black font-bold rounded hover:bg-yellow-500 transition">Connect Wallet</button>
+    <p id="status-msg" class="mt-4"></p>
   </div>
 
-  <!-- Dashboard -->
-  <div id="dashboard" class="hidden flex-col items-center w-full max-w-lg text-center">
-    <h2 class="text-3xl font-bold mb-2">Welcome, Mogul</h2>
-    <p class="text-gray-400 mb-8">Exclusive access granted to verified holders.</p>
+  <div id="dashboard" class="dashboard w-full max-w-4xl">
+    <h2 class="text-2xl font-bold mb-4">Your NFTs</h2>
+    <div id="nft-gallery" class="nft-gallery"></div>
 
-    <div class="bg-[#151520] p-6 rounded-2xl shadow-xl w-full">
-      <h3 class="text-xl mb-4 font-semibold">Your Dashboard</h3>
-      <div class="grid grid-cols-2 gap-4">
-        <div class="bg-[#1e1e2a] p-4 rounded-xl">
-          <p class="text-sm text-gray-400">XP</p>
-          <h4 class="text-2xl font-bold">0</h4>
-        </div>
-        <div class="bg-[#1e1e2a] p-4 rounded-xl">
-          <p class="text-sm text-gray-400">Season</p>
-          <h4 class="text-2xl font-bold">Coming Soon</h4>
-        </div>
-      </div>
-    </div>
-
-    <div class="mt-8">
-      <h3 class="text-xl mb-2 font-semibold">Your NFTs</h3>
-      <div id="nftGrid" class="grid grid-cols-2 gap-3"></div>
+    <h2 class="text-2xl font-bold mt-8 mb-4">Battle Pass - Season 1 (Coming Soon)</h2>
+    <div class="grid grid-cols-4 gap-4">
+      <div class="p-4 bg-gray-900 rounded locked">Level 1</div>
+      <div class="p-4 bg-gray-900 rounded locked">Level 2</div>
+      <div class="p-4 bg-gray-900 rounded locked">Level 3</div>
+      <div class="p-4 bg-gray-900 rounded locked">Level 4</div>
+      <div class="p-4 bg-gray-900 rounded locked">Level 5</div>
+      <div class="p-4 bg-gray-900 rounded locked">Level 6</div>
+      <div class="p-4 bg-gray-900 rounded locked">Level 7</div>
+      <div class="p-4 bg-gray-900 rounded locked">Level 8</div>
+      <div class="p-4 bg-gray-900 rounded locked">Level 9</div>
+      <div class="p-4 bg-gray-900 rounded locked">Level 10</div>
+      <div class="p-4 bg-gray-900 rounded locked">Level 11</div>
+      <div class="p-4 bg-gray-900 rounded locked">Level 12</div>
     </div>
   </div>
 
-  <script>
-    const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
-    const BANKMEN_COLLECTION = "GPtMdqNwNFnZGojyxEseXviJUZiqHyHDzWySjSHFup7J";
+<script>
+  const workerUrl = "https://bankmen-verifier.bankmen-verifier.workers.dev"; // Your Worker URL
 
-    const connectButton = document.getElementById('connectButton');
-    const status = document.getElementById('status');
-    const locked = document.getElementById('locked');
-    const dashboard = document.getElementById('dashboard');
-    const nftGrid = document.getElementById('nftGrid');
+  const connectBtn = document.getElementById("connect-btn");
+  const statusMsg = document.getElementById("status-msg");
+  const dashboard = document.getElementById("dashboard");
+  const nftGallery = document.getElementById("nft-gallery");
 
-    async function connectWallet() {
-      try {
-        const provider = window.solana;
-        if (!provider || !provider.isPhantom) {
-          status.textContent = "Phantom wallet not found.";
-          return;
-        }
+  async function connectWallet() {
+    if (!window.solana) {
+      statusMsg.textContent = "No Solana wallet detected. Install Phantom or Solflare.";
+      return;
+    }
 
-        const resp = await provider.connect();
-        const walletAddress = resp.publicKey.toString();
-        status.textContent = "Verifying ownership...";
+    try {
+      const resp = await window.solana.connect();
+      const publicKey = resp.publicKey.toString();
+      statusMsg.textContent = "Verifying NFT ownership...";
+      
+      const res = await fetch(`${workerUrl}?wallet=${publicKey}`);
+      const data = await res.json();
 
-        const hasNFT = await verifyOwnership(walletAddress);
+      if (data.verified) {
+        statusMsg.textContent = "Wallet verified!";
+        document.getElementById("wallet-section").style.display = "none";
+        dashboard.style.display = "block";
 
-        if (hasNFT) {
-          locked.classList.add('hidden');
-          dashboard.classList.remove('hidden');
-          status.textContent = "";
-          await loadNFTs(walletAddress);
-        } else {
-          status.textContent = "No Bankmen NFTs found.";
-        }
-      } catch (e) {
-        console.error(e);
-        status.textContent = "Connection or verification error.";
+        // Fetch and display NFTs (placeholder for art)
+        const heliusRes = await fetch(`${workerUrl}?wallet=${publicKey}`);
+        const heliusData = await heliusRes.json();
+        // This is a placeholder; you can replace with NFT images from metadata
+        nftGallery.innerHTML = `<div class="nft-item">Bankmen NFT</div>`;
+      } else {
+        statusMsg.textContent = "No Bankmen NFTs found in this wallet.";
       }
+    } catch (err) {
+      console.error(err);
+      statusMsg.textContent = "Error connecting wallet or verifying ownership.";
     }
+  }
 
-    async function verifyOwnership(walletAddress) {
-      try {
-        const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
-          new solanaWeb3.PublicKey(walletAddress),
-          { programId: new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA") }
-        );
+  connectBtn.addEventListener("click", connectWallet);
+</script>
 
-        for (const account of tokenAccounts.value) {
-          const mint = account.account.data.parsed.info.mint;
-          const metadataPDA = await getMetadataPDA(mint);
-          const metadataAccountInfo = await connection.getAccountInfo(metadataPDA);
-          if (metadataAccountInfo?.data) {
-            const metadata = decodeMetadata(metadataAccountInfo.data);
-            if (metadata.collection?.key === BANKMEN_COLLECTION && metadata.collection?.verified) {
-              return true;
-            }
-          }
-        }
-        return false;
-      } catch (err) {
-        console.error(err);
-        return false;
-      }
-    }
-
-    async function loadNFTs(walletAddress) {
-      nftGrid.innerHTML = `<p class="text-gray-400 text-sm col-span-2">Fetching your NFTs...</p>`;
-      // Placeholder – will replace with full metadata fetch later
-      setTimeout(() => {
-        nftGrid.innerHTML = `
-          <div class="bg-[#1e1e2a] rounded-xl overflow-hidden"><img src="https://gateway.pinit.io/ipfs/QmdqV9BwhqqRymciXKu1SwJHNMNanosDpUk72aMjBP7e1q/2.png" class="w-full"></div>
-        `;
-      }, 1200);
-    }
-
-    async function getMetadataPDA(mint) {
-      const [pda] = await solanaWeb3.PublicKey.findProgramAddress(
-        [
-          Buffer.from("metadata"),
-          new solanaWeb3.PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s").toBuffer(),
-          new solanaWeb3.PublicKey(mint).toBuffer()
-        ],
-        new solanaWeb3.PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s")
-      );
-      return pda;
-    }
-
-    function decodeMetadata(buffer) {
-      const str = new TextDecoder("utf-8").decode(buffer);
-      const jsonStart = str.indexOf("{");
-      const jsonEnd = str.lastIndexOf("}") + 1;
-      try { return JSON.parse(str.slice(jsonStart, jsonEnd)); }
-      catch { return {}; }
-    }
-
-    connectButton.addEventListener('click', connectWallet);
-  </script>
 </body>
 </html>
