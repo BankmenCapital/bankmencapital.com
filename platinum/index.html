@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bankmen Platinum — Battlepass</title>
+
+  <!-- TAILWIND (WORKS) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- BS58 & NACL (WORKS) -->
+  <script src="https://unpkg.com/bs58@4.0.1/index.js"></script>
+  <script src="https://unpkg.com/tweetnacl@1.0.3/nacl.min.js"></script>
+
+  <style>
+    body { background: #0a0a14; color: #e5e7eb; font-family: 'Inter', sans-serif; }
+    .battlepass { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 16px; padding: 1.5rem; }
+    .level { background: #111827; border: 1px solid #374151; border-radius: 12px; padding: 1rem; text-align: center; opacity: 0.4; filter: grayscale(100%); position: relative; }
+    .level.unlocked { opacity: 1; filter: none; border-color: #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.3); animation: pulse 2s infinite; }
+    .level.coming-soon::after { content: "Coming Soon"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.8rem; color: #9ca3af; }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.3); } 50% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.6); } }
+    .xp-bar { height: 12px; background: #1f2937; border-radius: 6px; overflow: hidden; margin: 1rem 0; }
+    .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); width: 0%; transition: width 1s ease; }
+    .nft-card { width: 100px; height: 100px; background: #1f2937; border: 2px solid #fbbf24; border-radius: 12px; overflow: hidden; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-6">
+
+  <div id="connect-section" class="text-center">
+    <h1 class="text-5xl font-bold mb-2 text-yellow-400">BANKMEN PLATINUM</h1>
+    <p class="text-gray-400 mb-8">Post golf. Earn XP. Unlock glory.</p>
+    <button id="connect-btn" class="px-8 py-4 bg-yellow-500 text-black font-bold text-lg rounded-full hover:bg-yellow-400 transition shadow-lg">
+      Connect Phantom Wallet
+    </button>
+    <p id="status" class="mt-6 text-sm text-red-400"></p>
+  </div>
+
+  <div id="dashboard" class="hidden w-full max-w-5xl mt-10">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-3xl font-bold">Welcome, <span id="wallet">...</span>!</h2>
+        <p class="text-gray-400">Your NFT is verified.</p>
+      </div>
+      <div class="text-right">
+        <div class="text-4xl font-bold text-yellow-400" id="xp">0</div>
+        <p class="text-sm text-gray-400">Total XP</p>
+      </div>
+    </div>
+
+    <div class="xp-bar"><div class="xp-fill" id="xp-fill"></div></div>
+    <p class="text-sm text-gray-400 text-right" id="xp-progress">Level <span id="level">1</span> — 0 / 100 XP</p>
+
+    <div class="mt-10">
+      <h3 class="text-xl font-bold mb-4">Your Bankmen NFT</h3>
+      <div class="flex gap-4 justify-center">
+        <div class="nft-card">
+          <img src="../assets/bankmen-nft.png" alt="NFT" class="w-full h-full object-cover">
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-12 battlepass">
+      <h3 class="text-2xl font-bold mb-6 text-yellow-400">Battlepass — Season 1: Golf & Glory</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div class="level unlocked"><strong>Level 1</strong><br><small>Verified Holder</small></div>
+        <div class="level"><strong>Level 2</strong><br><small>Post Golf Video</small></div>
+        <div class="level"><strong>Level 3</strong><br><small>RT Bankmen Tweet</small></div>
+        <div class="level"><strong>Level 4</strong><br><small>Sticker Pack</small></div>
+        <div class="level coming-soon"><strong>Level 5</strong><br><small>Merch Drop</small></div>
+        <div class="level coming-soon"><strong>Level 6</strong><br><small>Exclusive NFT</small></div>
+        <div class="level coming-soon"><strong>Level 7</strong><br><small>Art Upgrade</small></div>
+        <div class="level coming-soon"><strong>Level 8</strong><br><small>Alpha Access</small></div>
+      </div>
+    </div>
+
+    <a href="/" class="mt-8 px-6 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition">
+      Back to Home
+    </a>
+  </div>
+
+  <script>
+    const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev"; // CHANGE ME
+
+    let token = null;
+    let pubkey = null;
+    let currentXP = 0;
+    const XP_PER_LEVEL = 100;
+    const MAX_LEVEL = 8;
+
+    document.getElementById("connect-btn").onclick = async () => {
+      const status = document.getElementById("status");
+      if (!window.solana?.isPhantom) return status.textContent = "Install Phantom!";
+
+      try {
+        status.textContent = "Connecting...";
+        await window.solana.connect();
+        pubkey = window.solana.publicKey.toBase58();
+        status.textContent = "Signing...";
+
+        const message = `Bankmen Access - ${Date.now()}`;
+        const encoded = new TextEncoder().encode(message);
+        const { signature } = await window.solana.signMessage(encoded, "utf8");
+        const sigBase58 = bs58.encode(signature);
+
+        status.textContent = "Verifying...";
+        const res = await fetch(`${WORKER_URL}/auth`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pubkey, signature: sigBase58, message })
+        });
+
+        const data = await res.json();
+        if (data.token) {
+          token = data.token;
+          document.getElementById("connect-section").classList.add("hidden");
+          document.getElementById("dashboard").classList.remove("hidden");
+          document.getElementById("wallet").textContent = pubkey.slice(0,4)+"..."+pubkey.slice(-4);
+          loadXP();
+        } else {
+          status.textContent = data.error || "No NFT";
+        }
+      } catch (err) {
+        status.textContent = "Failed: " + err.message;
+      }
+    };
+
+    async function loadXP() {
+      const res = await fetch(`${WORKER_URL}/xp?token=${token}`);
+      const data = await res.json();
+      currentXP = data.xp || 0;
+      updateXP();
+    }
+
+    function updateXP() {
+      const level = Math.min(Math.floor(currentXP / XP_PER_LEVEL) + 1, MAX_LEVEL);
+      const progress = (currentXP % XP_PER_LEVEL) / XP_PER_LEVEL * 100;
+      document.getElementById("xp").textContent = currentXP;
+      document.getElementById("xp-fill").style.width = progress + "%";
+      document.getElementById("level").textContent = level;
+      document.getElementById("xp-progress").textContent = `Level ${level} — ${currentXP % XP_PER_LEVEL} / ${XP_PER_LEVEL} XP`;
+
+      document.querySelectorAll(".level").forEach((el, i) => {
+        el.classList.toggle("unlocked", i + 1 <= level);
+        el.classList.toggle("coming-soon", i + 1 > 4);
+      });
+    }
+  </script>
+</body>
+</html>
