@@ -3,93 +3,184 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bankmen Platinum</title>
-  <script src="https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-base@0.9.27/lib/index.iife.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-wallets@0.19.37/lib/index.iife.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-react-ui@0.9.39/lib/index.iife.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.79.0/lib/index.iife.min.js"></script>
+  <title>Bankmen Platinum — Battlepass</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.4/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3"></script>
   <style>
-    body { background: #0d0d17; color: #fff; font-family: 'Arial', sans-serif; }
-    .dashboard { display: none; padding: 2rem; }
-    .nft-gallery { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
-    .nft-item { width: 120px; height: 120px; border: 2px solid #ffd700; border-radius: 8px; overflow: hidden; background: #111; display: flex; justify-content: center; align-items: center; }
-    .locked { opacity: 0.3; }
+    body { background: #0a0a14; color: #e5e7eb; font-family: 'Inter', sans-serif; }
+    .battlepass { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 16px; padding: 1.5rem; }
+    .level { 
+      background: #111827; border: 1px solid #374151; border-radius: 12px; 
+      padding: 1rem; text-align: center; transition: all 0.3s; position: relative;
+      opacity: 0.4; filter: grayscale(100%);
+    }
+    .level.unlocked { 
+      opacity: 1; filter: none; border-color: #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+      animation: pulse 2s infinite;
+    }
+    .level.coming-soon::after {
+      content: "Coming Soon"; position: absolute; top: 50%; left: 50%; 
+      transform: translate(-50%, -50%); font-size: 0.8rem; color: #9ca3af; font-weight: bold;
+    }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.3); } 50% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.6); } }
+    .xp-bar { height: 12px; background: #1f2937; border-radius: 6px; overflow: hidden; margin: 1rem 0; }
+    .xp-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); width: 0%; transition: width 1s ease; }
+    .nft-card { width: 100px; height: 100px; background: #1f2937; border: 2px solid #fbbf24; border-radius: 12px; overflow: hidden; }
+    .hidden { display: none; }
   </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen">
+<body class="flex flex-col items-center justify-center min-h-screen p-6">
 
-  <h1 class="text-4xl font-bold mb-6">Bankmen Platinum</h1>
-  
-  <div id="wallet-section" class="flex flex-col items-center">
-    <button id="connect-btn" class="px-6 py-3 bg-yellow-600 text-black font-bold rounded hover:bg-yellow-500 transition">Connect Wallet</button>
-    <p id="status-msg" class="mt-4"></p>
+  <!-- CONNECT SECTION -->
+  <div id="connect-section" class="text-center">
+    <h1 class="text-5xl font-bold mb-2 text-yellow-400">BANKMEN PLATINUM</h1>
+    <p class="text-gray-400 mb-8">Post golf. Earn XP. Unlock glory.</p>
+    <button id="connect-btn" class="px-8 py-4 bg-yellow-500 text-black font-bold text-lg rounded-full hover:bg-yellow-400 transition shadow-lg">
+      Connect Phantom Wallet
+    </button>
+    <p id="status" class="mt-6 text-sm"></p>
   </div>
 
-  <div id="dashboard" class="dashboard w-full max-w-4xl">
-    <h2 class="text-2xl font-bold mb-4">Your NFTs</h2>
-    <div id="nft-gallery" class="nft-gallery"></div>
-
-    <h2 class="text-2xl font-bold mt-8 mb-4">Battle Pass - Season 1 (Coming Soon)</h2>
-    <div class="grid grid-cols-4 gap-4">
-      <div class="p-4 bg-gray-900 rounded locked">Level 1</div>
-      <div class="p-4 bg-gray-900 rounded locked">Level 2</div>
-      <div class="p-4 bg-gray-900 rounded locked">Level 3</div>
-      <div class="p-4 bg-gray-900 rounded locked">Level 4</div>
-      <div class="p-4 bg-gray-900 rounded locked">Level 5</div>
-      <div class="p-4 bg-gray-900 rounded locked">Level 6</div>
-      <div class="p-4 bg-gray-900 rounded locked">Level 7</div>
-      <div class="p-4 bg-gray-900 rounded locked">Level 8</div>
-      <div class="p-4 bg-gray-900 rounded locked">Level 9</div>
-      <div class="p-4 bg-gray-900 rounded locked">Level 10</div>
-      <div class="p-4 bg-gray-900 rounded locked">Level 11</div>
-      <div class="p-4 bg-gray-900 rounded locked">Level 12</div>
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="hidden w-full max-w-5xl mt-10">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-3xl font-bold">Welcome, <span id="wallet">...</span>!</h2>
+        <p class="text-gray-400">Your NFT is verified.</p>
+      </div>
+      <div class="text-right">
+        <div class="text-4xl font-bold text-yellow-400" id="xp">0</div>
+        <p class="text-sm text-gray-400">Total XP</p>
+      </div>
     </div>
+
+    <!-- XP BAR -->
+    <div class="xp-bar"><div class="xp-fill" id="xp-fill"></div></div>
+    <p class="text-sm text-gray-400 text-right" id="xp-progress">Level <span id="level">1</span> — 0 / 100 XP</p>
+
+    <!-- NFT GALLERY -->
+    <div class="mt-10">
+      <h3 class="text-xl font-bold mb-4">Your Bankmen NFT</h3>
+      <div class="flex gap-4 justify-center">
+        <div class="nft-card">
+          <img src="https://via.placeholder.com/100?text=Bankmen+NFT" alt="NFT" class="w-full h-full object-cover">
+        </div>
+      </div>
+    </div>
+
+    <!-- BATTLEPASS -->
+    <div class="mt-12 battlepass">
+      <h3 class="text-2xl font-bold mb-6 text-yellow-400">Battlepass — Season 1: Golf & Glory</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div class="level unlocked"><strong>Level 1</strong><br><small>Verified Holder</small></div>
+        <div class="level"><strong>Level 2</strong><br><small>Post Golf Video</small></div>
+        <div class="level"><strong>Level 3</strong><br><small>RT Bankmen Tweet</small></div>
+        <div class="level"><strong>Level 4</strong><br><small>Sticker Pack</small></div>
+        <div class="level coming-soon"><strong>Level 5</strong><br><small>Merch Drop</small></div>
+        <div class="level coming-soon"><strong>Level 6</strong><br><small>Exclusive NFT</small></div>
+        <div class="level coming-soon"><strong>Level 7</strong><br><small>Art Upgrade</small></div>
+        <div class="level coming-soon"><strong>Level 8</strong><br><small>Alpha Access</small></div>
+      </div>
+    </div>
+
+    <button id="logout" class="mt-8 px-6 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition">
+      Logout
+    </button>
   </div>
 
-<script>
-  const workerUrl = "https://bankmen-verifier.bankmen-verifier.workers.dev"; // Your Worker URL
+  <script>
+    const WORKER_URL = "https://nft-dashboard-verifier.your-subdomain.workers.dev"; // CHANGE THIS
+    let token = null;
+    let pubkey = null;
+    let currentXP = 0;
 
-  const connectBtn = document.getElementById("connect-btn");
-  const statusMsg = document.getElementById("status-msg");
-  const dashboard = document.getElementById("dashboard");
-  const nftGallery = document.getElementById("nft-gallery");
+    const XP_PER_LEVEL = 100;
+    const MAX_LEVEL = 8;
 
-  async function connectWallet() {
-    if (!window.solana) {
-      statusMsg.textContent = "No Solana wallet detected. Install Phantom or Solflare.";
-      return;
-    }
-
-    try {
-      const resp = await window.solana.connect();
-      const publicKey = resp.publicKey.toString();
-      statusMsg.textContent = "Verifying NFT ownership...";
-      
-      const res = await fetch(`${workerUrl}?wallet=${publicKey}`);
-      const data = await res.json();
-
-      if (data.verified) {
-        statusMsg.textContent = "Wallet verified!";
-        document.getElementById("wallet-section").style.display = "none";
-        dashboard.style.display = "block";
-
-        // Fetch and display NFTs (placeholder for art)
-        const heliusRes = await fetch(`${workerUrl}?wallet=${publicKey}`);
-        const heliusData = await heliusRes.json();
-        // This is a placeholder; you can replace with NFT images from metadata
-        nftGallery.innerHTML = `<div class="nft-item">Bankmen NFT</div>`;
-      } else {
-        statusMsg.textContent = "No Bankmen NFTs found in this wallet.";
+    document.getElementById("connect-btn").onclick = async () => {
+      if (!window.solana?.isPhantom) {
+        document.getElementById("status").textContent = "Install Phantom Wallet!";
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      statusMsg.textContent = "Error connecting wallet or verifying ownership.";
+
+      try {
+        await window.solana.connect();
+        pubkey = window.solana.publicKey.toBase58();
+        document.getElementById("status").textContent = "Signing message...";
+
+        const message = `Bankmen Platinum Access - ${Date.now()}`;
+        const encoded = new TextEncoder().encode(message);
+        const { signature } = await window.solana.signMessage(encoded);
+        const sigBase58 = bs58.encode(signature);
+
+        const res = await fetch(`${WORKER_URL}/auth`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pubkey, signature: sigBase58, message })
+        });
+
+        const data = await res.json();
+        if (data.token) {
+          token = data.token;
+          document.getElementById("connect-section").classList.add("hidden");
+          document.getElementById("dashboard").classList.remove("hidden");
+          document.getElementById("wallet").textContent = pubkey.slice(0, 4) + "..." + pubkey.slice(-4);
+          loadXP();
+        } else {
+          document.getElementById("status").textContent = data.error || "No NFT found";
+        }
+      } catch (err) {
+        document.getElementById("status").textContent = "Failed: " + err.message;
+      }
+    };
+
+    async function loadXP() {
+      const res = await fetch(`${WORKER_URL}/xp?token=${token}`);
+      const data = await res.json();
+      currentXP = data.xp || 0;
+      updateXP();
     }
-  }
 
-  connectBtn.addEventListener("click", connectWallet);
-</script>
+    function updateXP() {
+      const level = Math.min(Math.floor(currentXP / XP_PER_LEVEL) + 1, MAX_LEVEL);
+      const xpInLevel = currentXP % XP_PER_LEVEL;
+      const progress = (xpInLevel / XP_PER_LEVEL) * 100;
 
+      document.getElementById("xp").textContent = currentXP;
+      document.getElementById("xp-fill").style.width = progress + "%";
+      document.getElementById("level").textContent = level;
+      document.getElementById("xp-progress").textContent = `Level ${level} — ${xpInLevel} / ${XP_PER_LEVEL} XP`;
+
+      // Unlock levels
+      document.querySelectorAll(".level").forEach((el, i) => {
+        if (i + 1 <= level) el.classList.add("unlocked");
+        else if (i + 1 > 4) el.classList.add("coming-soon");
+      });
+    }
+
+    // DEMO: Earn XP (replace with real quests later)
+    setInterval(() => {
+      if (token && Math.random() < 0.1) {
+        earnXP(10);
+      }
+    }, 5000);
+
+    async function earnXP(amount) {
+      const newXP = currentXP + amount;
+      await fetch(`${WORKER_URL}/xp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ pubkey, xp: newXP })
+      });
+      currentXP = newXP;
+      updateXP();
+    }
+
+    document.getElementById("logout").onclick = () => location.reload();
+  </script>
 </body>
 </html>
