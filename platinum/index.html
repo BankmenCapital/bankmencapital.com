@@ -8,12 +8,12 @@
   <!-- TAILWIND -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- BS58 & NACL (FORCE GLOBAL) -->
+  <!-- BS58 & NACL -->
   <script src="https://unpkg.com/bs58@4.0.1/index.js"></script>
   <script src="https://unpkg.com/tweetnacl@1.0.3/nacl.min.js"></script>
 
   <style>
-    body { background: #0a0a14; color: #e5e7eb; font-family: 'Inter', sans-serif; }
+    body { background: #0a0a14; color: #e5e7eb; font-family: 'Inter', sans-serif; margin: 0; padding: 2rem; }
     .battlepass { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 16px; padding: 1.5rem; }
     .level { background: #111827; border: 1px solid #374151; border-radius: 12px; padding: 1rem; text-align: center; opacity: 0.4; filter: grayscale(100%); position: relative; }
     .level.unlocked { opacity: 1; filter: none; border-color: #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.3); animation: pulse 2s infinite; }
@@ -25,15 +25,15 @@
     .hidden { display: none; }
   </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-6">
+<body class="flex flex-col items-center min-h-screen">
 
-  <div id="connect-section" class="text-center">
+  <div id="connect-section" class="text-center max-w-lg">
     <h1 class="text-5xl font-bold mb-2 text-yellow-400">BANKMEN PLATINUM</h1>
     <p class="text-gray-400 mb-8">Post golf. Earn XP. Unlock glory.</p>
     <button id="connect-btn" class="px-8 py-4 bg-yellow-500 text-black font-bold text-lg rounded-full hover:bg-yellow-400 transition shadow-lg">
       Connect Phantom Wallet
     </button>
-    <p id="status" class="mt-6 text-sm text-red-400"></p>
+    <p id="status" class="mt-6 text-sm text-red-400 min-h-[1.5em]"></p>
   </div>
 
   <div id="dashboard" class="hidden w-full max-w-5xl mt-10">
@@ -80,7 +80,7 @@
   </div>
 
   <script>
-    // CHANGE TO YOUR WORKER URL
+    // CHANGE THIS
     const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev";
 
     let token = null;
@@ -89,22 +89,20 @@
     const XP_PER_LEVEL = 100;
     const MAX_LEVEL = 8;
 
-    // Wait for ALL: Phantom + bs58 + nacl
-    function waitForEverything() {
-      if (window.solana?.isPhantom && typeof bs58 !== 'undefined' && typeof nacl !== 'undefined') {
-        initApp();
-      } else {
-        setTimeout(waitForEverything, 100);
-      }
-    }
-
-    function initApp() {
+    function init() {
       const btn = document.getElementById("connect-btn");
       const status = document.getElementById("status");
 
+      if (!btn) return setTimeout(init, 100);
+
       btn.onclick = async () => {
+        if (!window.solana?.isPhantom) {
+          status.textContent = "Phantom not detected. Install it!";
+          return;
+        }
+
         try {
-          status.textContent = "Opening Phantom...";
+          status.textContent = "Connecting...";
           const resp = await window.solana.connect();
           pubkey = resp.publicKey.toBase58();
           status.textContent = "Signing message...";
@@ -133,15 +131,20 @@
           }
         } catch (err) {
           status.textContent = "Error: " + err.message;
+          console.error(err);
         }
       };
     }
 
     async function loadXP() {
-      const res = await fetch(`${WORKER_URL}/xp?token=${token}`);
-      const data = await res.json();
-      currentXP = data.xp || 0;
-      updateXP();
+      try {
+        const res = await fetch(`${WORKER_URL}/xp?token=${token}`);
+        const data = await res.json();
+        currentXP = data.xp || 0;
+        updateXP();
+      } catch (err) {
+        console.error("XP load failed", err);
+      }
     }
 
     function updateXP() {
@@ -158,8 +161,12 @@
       });
     }
 
-    // Start waiting
-    waitForEverything();
+    // Start when page loads
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
   </script>
 </body>
 </html>
