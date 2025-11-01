@@ -5,12 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bankmen Platinum — Battlepass</title>
 
-  <!-- TAILWIND (WORKS) -->
+  <!-- TAILWIND (INSTANT LOAD) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- BS58 & NACL (WORKS) -->
-  <script src="https://unpkg.com/bs58@4.0.1/index.js"></script>
-  <script src="https://unpkg.com/tweetnacl@1.0.3/nacl.min.js"></script>
+  <!-- BS58 & NACL (LOAD FIRST) -->
+  <script>
+    // Pre-load bs58 and nacl globally
+    window.bs58 = null;
+    window.nacl = null;
+  </script>
+  <script src="https://unpkg.com/bs58@4.0.1/index.js" onload="window.bs58 = bs58"></script>
+  <script src="https://unpkg.com/tweetnacl@1.0.3/nacl.min.js" onload="window.nacl = nacl"></script>
 
   <style>
     body { background: #0a0a14; color: #e5e7eb; font-family: 'Inter', sans-serif; }
@@ -55,7 +60,7 @@
       <h3 class="text-xl font-bold mb-4">Your Bankmen NFT</h3>
       <div class="flex gap-4 justify-center">
         <div class="nft-card">
-          <img src="../assets/bankmen-nft.png" alt="NFT" class="w-full h-full object-cover">
+          <img src="https://i.imgur.com/8X1n0nG.png" alt="NFT" class="w-full h-full object-cover">
         </div>
       </div>
     </div>
@@ -80,7 +85,8 @@
   </div>
 
   <script>
-    const WORKER_URL = "https://nft-dashboard-verifier.bankmen-verifier.workers.dev"; // CHANGE ME
+    // CHANGE TO YOUR WORKER URL
+    const WORKER_URL = "https://nft-dashboard-verifier.your-subdomain.workers.dev";
 
     let token = null;
     let pubkey = null;
@@ -88,42 +94,53 @@
     const XP_PER_LEVEL = 100;
     const MAX_LEVEL = 8;
 
-    document.getElementById("connect-btn").onclick = async () => {
-      const status = document.getElementById("status");
-      if (!window.solana?.isPhantom) return status.textContent = "Install Phantom!";
-
-      try {
-        status.textContent = "Connecting...";
-        await window.solana.connect();
-        pubkey = window.solana.publicKey.toBase58();
-        status.textContent = "Signing...";
-
-        const message = `Bankmen Access - ${Date.now()}`;
-        const encoded = new TextEncoder().encode(message);
-        const { signature } = await window.solana.signMessage(encoded, "utf8");
-        const sigBase58 = bs58.encode(signature);
-
-        status.textContent = "Verifying...";
-        const res = await fetch(`${WORKER_URL}/auth`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pubkey, signature: sigBase58, message })
-        });
-
-        const data = await res.json();
-        if (data.token) {
-          token = data.token;
-          document.getElementById("connect-section").classList.add("hidden");
-          document.getElementById("dashboard").classList.remove("hidden");
-          document.getElementById("wallet").textContent = pubkey.slice(0,4)+"..."+pubkey.slice(-4);
-          loadXP();
-        } else {
-          status.textContent = data.error || "No NFT";
-        }
-      } catch (err) {
-        status.textContent = "Failed: " + err.message;
+    // Wait for bs58 and nacl to load
+    function waitForLibs() {
+      if (window.bs58 && window.nacl) {
+        initApp();
+      } else {
+        setTimeout(waitForLibs, 100);
       }
-    };
+    }
+
+    function initApp() {
+      document.getElementById("connect-btn").onclick = async () => {
+        const status = document.getElementById("status");
+        if (!window.solana?.isPhantom) return status.textContent = "Install Phantom!";
+
+        try {
+          status.textContent = "Connecting...";
+          await window.solana.connect();
+          pubkey = window.solana.publicKey.toBase58();
+          status.textContent = "Signing...";
+
+          const message = `Bankmen Access - ${Date.now()}`;
+          const encoded = new TextEncoder().encode(message);
+          const { signature } = await window.solana.signMessage(encoded, "utf8");
+          const sigBase58 = window.bs58.encode(signature);
+
+          status.textContent = "Verifying...";
+          const res = await fetch(`${WORKER_URL}/auth`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pubkey, signature: sigBase58, message })
+          });
+
+          const data = await res.json();
+          if (data.token) {
+            token = data.token;
+            document.getElementById("connect-section").classList.add("hidden");
+            document.getElementById("dashboard").classList.remove("hidden");
+            document.getElementById("wallet").textContent = pubkey.slice(0,4)+"..."+pubkey.slice(-4);
+            loadXP();
+          } else {
+            status.textContent = data.error || "No NFT";
+          }
+        } catch (err) {
+          status.textContent = "Failed: " + err.message;
+        }
+      };
+    }
 
     async function loadXP() {
       const res = await fetch(`${WORKER_URL}/xp?token=${token}`);
@@ -145,6 +162,9 @@
         el.classList.toggle("coming-soon", i + 1 > 4);
       });
     }
+
+    // Start waiting
+    waitForLibs();
   </script>
 </body>
 </html>
