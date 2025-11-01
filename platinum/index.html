@@ -8,7 +8,7 @@
   <!-- TAILWIND -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- BS58 & NACL -->
+  <!-- BS58 & NACL (FORCE GLOBAL) -->
   <script src="https://unpkg.com/bs58@4.0.1/index.js"></script>
   <script src="https://unpkg.com/tweetnacl@1.0.3/nacl.min.js"></script>
 
@@ -89,12 +89,12 @@
     const XP_PER_LEVEL = 100;
     const MAX_LEVEL = 8;
 
-    // Wait for Phantom to inject
-    function waitForPhantom() {
-      if (window.solana?.isPhantom) {
+    // Wait for ALL: Phantom + bs58 + nacl
+    function waitForEverything() {
+      if (window.solana?.isPhantom && typeof bs58 !== 'undefined' && typeof nacl !== 'undefined') {
         initApp();
       } else {
-        setTimeout(waitForPhantom, 100);
+        setTimeout(waitForEverything, 100);
       }
     }
 
@@ -159,7 +159,7 @@
     }
 
     // Start waiting
-    waitForPhantom();
+    waitForEverything();
   </script>
 </body>
 </html>
