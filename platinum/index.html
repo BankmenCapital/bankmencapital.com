@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bankmen Platinum — Battlepass</title>
 
-  <!-- TAILWIND (INSTANT LOAD) -->
+  <!-- TAILWIND (INSTANT) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- BS58 & NACL (LOAD FIRST) -->
+  <!-- BS58 & NACL (FORCE LOAD) -->
   <script>
-    // Pre-load bs58 and nacl globally
     window.bs58 = null;
     window.nacl = null;
   </script>
@@ -94,32 +93,31 @@
     const XP_PER_LEVEL = 100;
     const MAX_LEVEL = 8;
 
-    // Wait for bs58 and nacl to load
-    function waitForLibs() {
-      if (window.bs58 && window.nacl) {
+    function waitForLibsAndPhantom() {
+      if (window.bs58 && window.nacl && window.solana?.isPhantom) {
         initApp();
       } else {
-        setTimeout(waitForLibs, 100);
+        setTimeout(waitForLibsAndPhantom, 100);
       }
     }
 
     function initApp() {
-      document.getElementById("connect-btn").onclick = async () => {
-        const status = document.getElementById("status");
-        if (!window.solana?.isPhantom) return status.textContent = "Install Phantom!";
+      const btn = document.getElementById("connect-btn");
+      const status = document.getElementById("status");
 
+      btn.onclick = async () => {
         try {
-          status.textContent = "Connecting...";
-          await window.solana.connect();
-          pubkey = window.solana.publicKey.toBase58();
-          status.textContent = "Signing...";
+          status.textContent = "Connecting to Phantom...";
+          const resp = await window.solana.connect();
+          pubkey = resp.publicKey.toBase58();
+          status.textContent = "Signing message...";
 
-          const message = `Bankmen Access - ${Date.now()}`;
+          const message = `Bankmen Platinum - ${Date.now()}`;
           const encoded = new TextEncoder().encode(message);
-          const { signature } = await window.solana.signMessage(encoded, "utf8");
-          const sigBase58 = window.bs58.encode(signature);
+          const result = await window.solana.signMessage(encoded, "utf8");
+          const sigBase58 = window.bs58.encode(result.signature);
 
-          status.textContent = "Verifying...";
+          status.textContent = "Verifying NFT...";
           const res = await fetch(`${WORKER_URL}/auth`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -134,10 +132,10 @@
             document.getElementById("wallet").textContent = pubkey.slice(0,4)+"..."+pubkey.slice(-4);
             loadXP();
           } else {
-            status.textContent = data.error || "No NFT";
+            status.textContent = data.error || "No NFT found";
           }
         } catch (err) {
-          status.textContent = "Failed: " + err.message;
+          status.textContent = "Error: " + err.message;
         }
       };
     }
@@ -163,8 +161,8 @@
       });
     }
 
-    // Start waiting
-    waitForLibs();
+    // Start waiting for Phantom + libs
+    waitForLibsAndPhantom();
   </script>
 </body>
 </html>
