@@ -4,9 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bankmen Platinum — Battlepass</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.4/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3"></script>
+  
+  <!-- TAILWIND CSS (FIXED) -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.0/dist/tailwind.min.css" rel="stylesheet">
+  
+  <!-- BS58 & TWEETNACL (FIXED CDNs) -->
+  <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/dist/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/dist/nacl.min.js"></script>
+
   <style>
     body { background: #0a0a14; color: #e5e7eb; font-family: 'Inter', sans-serif; }
     .battlepass { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 16px; padding: 1.5rem; }
@@ -39,7 +44,7 @@
     <button id="connect-btn" class="px-8 py-4 bg-yellow-500 text-black font-bold text-lg rounded-full hover:bg-yellow-400 transition shadow-lg">
       Connect Phantom Wallet
     </button>
-    <p id="status" class="mt-6 text-sm"></p>
+    <p id="status" class="mt-6 text-sm text-red-400"></p>
   </div>
 
   <!-- DASHBOARD -->
@@ -90,7 +95,9 @@
   </div>
 
   <script>
-    const WORKER_URL = "https://nft-dashboard-verifier.your-subdomain.workers.dev"; // CHANGE THIS
+    // CHANGE THIS TO YOUR REAL WORKER URL
+    const WORKER_URL = "https://nft-dashboard-verifier.your-subdomain.workers.dev"; 
+
     let token = null;
     let pubkey = null;
     let currentXP = 0;
@@ -99,21 +106,26 @@
     const MAX_LEVEL = 8;
 
     document.getElementById("connect-btn").onclick = async () => {
+      const status = document.getElementById("status");
+      status.textContent = "Checking for Phantom...";
+
       if (!window.solana?.isPhantom) {
-        document.getElementById("status").textContent = "Install Phantom Wallet!";
+        status.textContent = "Phantom Wallet not found. Install it!";
         return;
       }
 
       try {
+        status.textContent = "Connecting...";
         await window.solana.connect();
         pubkey = window.solana.publicKey.toBase58();
-        document.getElementById("status").textContent = "Signing message...";
+        status.textContent = "Signing message...";
 
         const message = `Bankmen Platinum Access - ${Date.now()}`;
         const encoded = new TextEncoder().encode(message);
-        const { signature } = await window.solana.signMessage(encoded);
-        const sigBase58 = bs58.encode(signature);
+        const result = await window.solana.signMessage(encoded, "utf8");
+        const sigBase58 = bs58.encode(result.signature);
 
+        status.textContent = "Verifying NFT...";
         const res = await fetch(`${WORKER_URL}/auth`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -128,18 +140,23 @@
           document.getElementById("wallet").textContent = pubkey.slice(0, 4) + "..." + pubkey.slice(-4);
           loadXP();
         } else {
-          document.getElementById("status").textContent = data.error || "No NFT found";
+          status.textContent = data.error || "No NFT found in this wallet.";
         }
       } catch (err) {
-        document.getElementById("status").textContent = "Failed: " + err.message;
+        console.error(err);
+        status.textContent = "Failed: " + (err.message || "Unknown error");
       }
     };
 
     async function loadXP() {
-      const res = await fetch(`${WORKER_URL}/xp?token=${token}`);
-      const data = await res.json();
-      currentXP = data.xp || 0;
-      updateXP();
+      try {
+        const res = await fetch(`${WORKER_URL}/xp?token=${token}`);
+        const data = await res.json();
+        currentXP = data.xp || 0;
+        updateXP();
+      } catch (err) {
+        console.error("XP load failed", err);
+      }
     }
 
     function updateXP() {
@@ -152,19 +169,24 @@
       document.getElementById("level").textContent = level;
       document.getElementById("xp-progress").textContent = `Level ${level} — ${xpInLevel} / ${XP_PER_LEVEL} XP`;
 
-      // Unlock levels
       document.querySelectorAll(".level").forEach((el, i) => {
-        if (i + 1 <= level) el.classList.add("unlocked");
-        else if (i + 1 > 4) el.classList.add("coming-soon");
+        el.classList.remove("unlocked", "coming-soon");
+        if (i + 1 <= level) {
+          el.classList.add("unlocked");
+        } else if (i + 1 > 4) {
+          el.classList.add("coming-soon");
+        }
       });
     }
 
-    // DEMO: Earn XP (replace with real quests later)
+    document.getElementById("logout").onclick = () => location.reload();
+
+    // DEMO: Auto-earn XP every 10 sec (remove later)
     setInterval(() => {
-      if (token && Math.random() < 0.1) {
+      if (token && Math.random() < 0.3) {
         earnXP(10);
       }
-    }, 5000);
+    }, 10000);
 
     async function earnXP(amount) {
       const newXP = currentXP + amount;
@@ -179,8 +201,6 @@
       currentXP = newXP;
       updateXP();
     }
-
-    document.getElementById("logout").onclick = () => location.reload();
   </script>
 </body>
 </html>
